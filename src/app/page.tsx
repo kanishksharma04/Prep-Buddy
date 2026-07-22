@@ -38,7 +38,7 @@ export default async function Home() {
             </Link>
             <Link
               href="/login"
-              className="border-border rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Log in
             </Link>

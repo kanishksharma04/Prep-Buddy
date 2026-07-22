@@ -2,16 +2,19 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { createSubjectAction } from "@/lib/actions/subjects";
+import { useToast } from "@/components/ui/toast-context";
 
 export function CreateSubjectForm() {
   const [state, formAction, isPending] = useActionState(createSubjectAction, undefined);
   const formRef = useRef<HTMLFormElement>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (state?.ok) {
       formRef.current?.reset();
+      showToast("Subject added");
     }
-  }, [state]);
+  }, [state, showToast]);
 
   return (
     <form
@@ -29,7 +32,7 @@ export function CreateSubjectForm() {
           required
           maxLength={100}
           placeholder="e.g. Organic Chemistry"
-          className="border-border bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
       </div>
 
@@ -41,7 +44,7 @@ export function CreateSubjectForm() {
           id="new-subject-exam-date"
           name="examDate"
           type="date"
-          className="border-border bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
       </div>
 

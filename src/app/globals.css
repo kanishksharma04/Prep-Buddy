@@ -35,6 +35,12 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-ring: var(--ring);
+  /* Stronger border for interactive controls (inputs, outline buttons) —
+     `--border` alone is ~1.3:1 against the background, well under WCAG
+     1.4.11's 3:1 minimum for UI-component boundaries. Reuses
+     --muted-foreground, which already clears 3:1 in both themes. Plain
+     decorative dividers (cards, empty states) keep using `border-border`. */
+  --color-control: var(--muted-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

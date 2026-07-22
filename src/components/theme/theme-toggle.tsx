@@ -13,7 +13,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       aria-label="Toggle color theme"
-      className="border-border hover:bg-surface rounded-md border p-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className="border-control hover:bg-surface rounded-md border p-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <svg
         aria-hidden="true"

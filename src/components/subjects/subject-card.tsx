@@ -6,6 +6,8 @@ import { renameSubjectAction, deleteSubjectAction } from "@/lib/actions/subjects
 import { formatDate, toDateInputValue } from "@/lib/format";
 import { Countdown } from "@/components/subjects/countdown";
 import { ProgressBar } from "@/components/subjects/progress-bar";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast-context";
 
 type Subject = {
   id: string;
@@ -17,7 +19,9 @@ type Subject = {
 
 export function SubjectCard({ subject }: { subject: Subject }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [state, formAction, isPending] = useActionState(renameSubjectAction, undefined);
+  const { showToast } = useToast();
 
   // Close the edit form once the rename succeeds. Derived during render
   // (React's recommended pattern) rather than in a useEffect, which would
@@ -27,16 +31,15 @@ export function SubjectCard({ subject }: { subject: Subject }) {
     setHandledState(state);
     if (state?.ok) {
       setIsEditing(false);
+      showToast(`"${subject.name}" updated`);
     }
   }
 
-  function handleDeleteSubmit(event: React.FormEvent<HTMLFormElement>) {
-    const confirmed = window.confirm(
-      `Delete "${subject.name}"? This also deletes all of its topics.`,
-    );
-    if (!confirmed) {
-      event.preventDefault();
-    }
+  async function handleConfirmDelete() {
+    const formData = new FormData();
+    formData.set("id", subject.id);
+    await deleteSubjectAction(formData);
+    showToast(`"${subject.name}" deleted`);
   }
 
   if (isEditing) {
@@ -54,7 +57,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
               defaultValue={subject.name}
               required
               maxLength={100}
-              className="border-border bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>
           <div className="space-y-1.5">
@@ -66,7 +69,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
               name="examDate"
               type="date"
               defaultValue={toDateInputValue(subject.examDate)}
-              className="border-border bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>
 
@@ -87,7 +90,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="border-border rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Cancel
             </button>
@@ -114,26 +117,24 @@ export function SubjectCard({ subject }: { subject: Subject }) {
         <div className="flex shrink-0 gap-2">
           <Link
             href={`/subjects/${subject.id}`}
-            className="border-border rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             Topics
           </Link>
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="border-border rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             Rename
           </button>
-          <form action={deleteSubjectAction} onSubmit={handleDeleteSubmit}>
-            <input type="hidden" name="id" value={subject.id} />
-            <button
-              type="submit"
-              className="rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
-            >
-              Delete
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={() => setIsConfirmingDelete(true)}
+            className="rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
+          >
+            Delete
+          </button>
         </div>
       </div>
 
@@ -143,6 +144,16 @@ export function SubjectCard({ subject }: { subject: Subject }) {
         </div>
         <Countdown examDate={subject.examDate} />
       </div>
+
+      <ConfirmDialog
+        open={isConfirmingDelete}
+        onOpenChange={setIsConfirmingDelete}
+        onConfirm={handleConfirmDelete}
+        title={`Delete "${subject.name}"?`}
+        description="This also deletes all of its topics. This can't be undone."
+        confirmLabel="Delete"
+        isDangerous
+      />
     </li>
   );
 }

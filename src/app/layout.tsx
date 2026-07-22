@@ -5,6 +5,7 @@ import "./globals.css";
 import { SkipLink } from "@/components/layout/skip-link";
 import { Header } from "@/components/layout/header";
 import { themeInitScript } from "@/components/theme/theme-init-script";
+import { ToastProvider } from "@/components/ui/toast-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,9 +37,11 @@ export default function RootLayout({
         <Script id="theme-init" strategy="beforeInteractive">
           {themeInitScript}
         </Script>
-        <SkipLink />
-        <Header />
-        {children}
+        <ToastProvider>
+          <SkipLink />
+          <Header />
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

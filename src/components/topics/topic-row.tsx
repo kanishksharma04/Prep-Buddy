@@ -7,6 +7,8 @@ import {
   moveTopicAction,
   toggleTopicAction,
 } from "@/lib/actions/topics";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast-context";
 
 type Topic = {
   id: string;
@@ -29,7 +31,9 @@ export function TopicRow({
   );
   const [, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [state, formAction, isPending] = useActionState(editTopicAction, undefined);
+  const { showToast } = useToast();
 
   // Close the edit form once the save succeeds — derived during render
   // (see subject-card.tsx for why this isn't a useEffect).
@@ -38,6 +42,7 @@ export function TopicRow({
     setHandledState(state);
     if (state?.ok) {
       setIsEditing(false);
+      showToast("Topic updated");
     }
   }
 
@@ -48,10 +53,11 @@ export function TopicRow({
     });
   }
 
-  function handleDeleteSubmit(event: React.FormEvent<HTMLFormElement>) {
-    if (!window.confirm(`Delete "${topic.title}"?`)) {
-      event.preventDefault();
-    }
+  async function handleConfirmDelete() {
+    const formData = new FormData();
+    formData.set("id", topic.id);
+    await deleteTopicAction(formData);
+    showToast(`"${topic.title}" deleted`);
   }
 
   if (isEditing) {
@@ -65,7 +71,7 @@ export function TopicRow({
             required
             maxLength={200}
             autoFocus
-            className="border-border bg-background flex-1 rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="border-control bg-background flex-1 rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           />
           <div className="flex gap-2">
             <button
@@ -78,7 +84,7 @@ export function TopicRow({
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="border-border rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Cancel
             </button>
@@ -140,17 +146,25 @@ export function TopicRow({
         >
           Edit
         </button>
-        <form action={deleteTopicAction} onSubmit={handleDeleteSubmit}>
-          <input type="hidden" name="id" value={topic.id} />
-          <button
-            type="submit"
-            aria-label={`Delete "${topic.title}"`}
-            className="rounded-md px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
-          >
-            Delete
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={() => setIsConfirmingDelete(true)}
+          aria-label={`Delete "${topic.title}"`}
+          className="rounded-md px-2 py-1.5 text-sm text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
+        >
+          Delete
+        </button>
       </div>
+
+      <ConfirmDialog
+        open={isConfirmingDelete}
+        onOpenChange={setIsConfirmingDelete}
+        onConfirm={handleConfirmDelete}
+        title={`Delete "${topic.title}"?`}
+        description="This can't be undone."
+        confirmLabel="Delete"
+        isDangerous
+      />
     </li>
   );
 }

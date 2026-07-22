@@ -2,16 +2,19 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { addTopicsAction } from "@/lib/actions/topics";
+import { useToast } from "@/components/ui/toast-context";
 
 export function AddTopicsForm({ subjectId }: { subjectId: string }) {
   const [state, formAction, isPending] = useActionState(addTopicsAction, undefined);
   const formRef = useRef<HTMLFormElement>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (state?.ok) {
       formRef.current?.reset();
+      showToast("Topics added");
     }
-  }, [state]);
+  }, [state, showToast]);
 
   return (
     <form
@@ -31,7 +34,7 @@ export function AddTopicsForm({ subjectId }: { subjectId: string }) {
           required
           rows={4}
           placeholder={"One topic per line — paste your whole syllabus at once, or add a single topic.\ne.g.\nIntroduction to Thermodynamics\nFirst Law of Thermodynamics"}
-          className="border-border bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
       </div>
 
