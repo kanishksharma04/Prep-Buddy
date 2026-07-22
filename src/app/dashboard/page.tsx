@@ -1,7 +1,15 @@
 import { requireUser } from "@/lib/auth-guard";
+import { db } from "@/lib/db";
+import { CreateSubjectForm } from "@/components/subjects/create-subject-form";
+import { SubjectCard } from "@/components/subjects/subject-card";
 
 export default async function DashboardPage() {
   const user = await requireUser();
+
+  const subjects = await db.subject.findMany({
+    where: { userId: user.id },
+    orderBy: { order: "asc" },
+  });
 
   return (
     <main
@@ -15,10 +23,20 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <p className="text-muted-foreground text-sm">
-        Subjects, topics, and countdowns land in later phases — this page just
-        proves the auth + route protection works end to end.
-      </p>
+      <CreateSubjectForm />
+
+      {subjects.length === 0 ? (
+        <p className="text-muted-foreground border-border rounded-lg border border-dashed p-6 text-center text-sm">
+          No subjects yet — add your first one above to start tracking its
+          syllabus.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {subjects.map((subject) => (
+            <SubjectCard key={subject.id} subject={subject} />
+          ))}
+        </ul>
+      )}
     </main>
   );
 }

@@ -50,7 +50,7 @@ and is also stored in Vercel's Production/Preview/Development env vars.
 - `authorize()` looks up the user by email via Prisma and checks the password with `bcryptjs`.
 - Route protection: [src/proxy.ts](./src/proxy.ts) (Next.js 16 renamed `middleware.ts` → `proxy.ts`) matches `/dashboard/:path*` and defers the allow/deny decision to the `authorized` callback in `src/auth.ts`.
 - Server Actions ([src/lib/actions/auth.ts](./src/lib/actions/auth.ts)) aren't covered by the proxy matcher (Server Actions are POSTs to the page route, not separate routes), so every mutation must independently check the session — see [src/lib/auth-guard.ts](./src/lib/auth-guard.ts)'s `requireUser()`, used by the dashboard page.
-- Pages: `/signup` and `/login` (redirect to `/dashboard` if already signed in), `/dashboard` (protected placeholder — real content lands in Phase 5+).
+- Pages: `/signup` and `/login` (redirect to `/dashboard` if already signed in), `/dashboard` (subjects list — see below).
 - Validation: [src/lib/validation/auth.ts](./src/lib/validation/auth.ts) — Zod schemas for login/signup, including password-confirmation matching.
 
 ## Layout & theme
@@ -59,6 +59,14 @@ and is also stored in Vercel's Production/Preview/Development env vars.
 - Logo: [src/components/brand/logo-mark.tsx](./src/components/brand/logo-mark.tsx) / [logo.tsx](./src/components/brand/logo.tsx) — hand-recreated inline SVG (clock + open book + check) in the brand colors, theme-aware (inverts fill for contrast in dark mode, subtle glow to match the reference mark). Favicon: [src/app/icon.svg](./src/app/icon.svg) (Next.js file convention — no `favicon.ico` needed).
 - Theme: dark/light via a `.dark` class on `<html>`, persisted in `localStorage` and falling back to `prefers-color-scheme`. [src/components/theme/theme-init-script.ts](./src/components/theme/theme-init-script.ts) runs as a `beforeInteractive` `next/script` so the class is set before first paint — no flash of the wrong theme. [theme-toggle.tsx](./src/components/theme/theme-toggle.tsx) is the client-side toggle button.
 - Accessibility: [src/components/layout/skip-link.tsx](./src/components/layout/skip-link.tsx) is the first focusable element on every page (visually hidden until focused), landing on each page's `#main-content`. All interactive elements use `focus-visible` outlines. Full a11y/responsive pass is Phase 9 — this is the structural foundation.
+
+## Subjects
+
+- Dashboard ([src/app/dashboard/page.tsx](./src/app/dashboard/page.tsx)) fetches the signed-in user's subjects (`orderBy: { order: "asc" }`) and renders them as cards, with an empty state when there are none.
+- Create: [src/components/subjects/create-subject-form.tsx](./src/components/subjects/create-subject-form.tsx) — name + optional exam date, resets itself on success.
+- Rename/delete: [src/components/subjects/subject-card.tsx](./src/components/subjects/subject-card.tsx) — inline edit-in-place for rename, native `confirm()` before delete (a proper accessible dialog lands in Phase 9).
+- Actions: [src/lib/actions/subjects.ts](./src/lib/actions/subjects.ts) — Zod-validated, and every mutation is scoped with `where: { id, userId }` (via `updateMany`/`deleteMany`) so one user can never touch another's subjects, even if they guess an id.
+- Validation: [src/lib/validation/subject.ts](./src/lib/validation/subject.ts).
 
 ## Database
 
@@ -76,7 +84,7 @@ npm run db:studio    # open Prisma Studio
 ```
 src/
   app/            Next.js App Router routes, layouts, and global styles
-  components/     UI components (auth forms, layout/header, theme, brand/logo)
+  components/     UI components (auth forms, subjects, layout/header, theme, brand/logo)
   lib/            Server-side utilities (Prisma client, auth actions/guards, validation)
   generated/      Prisma Client output (generated, gitignored)
   auth.ts         Auth.js (NextAuth v5) configuration
