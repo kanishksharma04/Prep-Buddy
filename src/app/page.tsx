@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 
 export default async function Home() {
@@ -5,7 +6,10 @@ export default async function Home() {
   const isLoggedIn = !!session?.user;
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
+    <main
+      id="main-content"
+      className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center"
+    >
       <div className="space-y-3">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Prep Buddy
@@ -18,26 +22,26 @@ export default async function Home() {
 
       <div className="flex flex-wrap items-center justify-center gap-3">
         {isLoggedIn ? (
-          <a
+          <Link
             href="/dashboard"
             className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             Go to dashboard
-          </a>
+          </Link>
         ) : (
           <>
-            <a
+            <Link
               href="/signup"
               className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Get started
-            </a>
-            <a
+            </Link>
+            <Link
               href="/login"
               className="border-border rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Log in
-            </a>
+            </Link>
           </>
         )}
       </div>

@@ -41,7 +41,24 @@ See [.env.example](./.env.example) for the full list. In short:
 
 `DATABASE_URL` and `DATABASE_URL_UNPOOLED` are provisioned automatically by
 the Vercel Neon integration (`vercel install neon`) and kept in sync via
-`vercel env pull`. `AUTH_SECRET` is added in the auth phase.
+`vercel env pull`. `AUTH_SECRET` was generated once with `npx auth secret`
+and is also stored in Vercel's Production/Preview/Development env vars.
+
+## Authentication
+
+- Config: [src/auth.ts](./src/auth.ts) — Auth.js (NextAuth v5) with a single Credentials provider, JWT session strategy (no database sessions/adapter — sessions aren't part of the data model).
+- `authorize()` looks up the user by email via Prisma and checks the password with `bcryptjs`.
+- Route protection: [src/proxy.ts](./src/proxy.ts) (Next.js 16 renamed `middleware.ts` → `proxy.ts`) matches `/dashboard/:path*` and defers the allow/deny decision to the `authorized` callback in `src/auth.ts`.
+- Server Actions ([src/lib/actions/auth.ts](./src/lib/actions/auth.ts)) aren't covered by the proxy matcher (Server Actions are POSTs to the page route, not separate routes), so every mutation must independently check the session — see [src/lib/auth-guard.ts](./src/lib/auth-guard.ts)'s `requireUser()`, used by the dashboard page.
+- Pages: `/signup` and `/login` (redirect to `/dashboard` if already signed in), `/dashboard` (protected placeholder — real content lands in Phase 5+).
+- Validation: [src/lib/validation/auth.ts](./src/lib/validation/auth.ts) — Zod schemas for login/signup, including password-confirmation matching.
+
+## Layout & theme
+
+- Header: [src/components/layout/header.tsx](./src/components/layout/header.tsx) — logo, session-aware nav (Login/Signup vs. Dashboard/Log out), theme toggle. Rendered once in the root layout, so it's on every page.
+- Logo: [src/components/brand/logo-mark.tsx](./src/components/brand/logo-mark.tsx) / [logo.tsx](./src/components/brand/logo.tsx) — hand-recreated inline SVG (clock + open book + check) in the brand colors, theme-aware (inverts fill for contrast in dark mode, subtle glow to match the reference mark). Favicon: [src/app/icon.svg](./src/app/icon.svg) (Next.js file convention — no `favicon.ico` needed).
+- Theme: dark/light via a `.dark` class on `<html>`, persisted in `localStorage` and falling back to `prefers-color-scheme`. [src/components/theme/theme-init-script.ts](./src/components/theme/theme-init-script.ts) runs as a `beforeInteractive` `next/script` so the class is set before first paint — no flash of the wrong theme. [theme-toggle.tsx](./src/components/theme/theme-toggle.tsx) is the client-side toggle button.
+- Accessibility: [src/components/layout/skip-link.tsx](./src/components/layout/skip-link.tsx) is the first focusable element on every page (visually hidden until focused), landing on each page's `#main-content`. All interactive elements use `focus-visible` outlines. Full a11y/responsive pass is Phase 9 — this is the structural foundation.
 
 ## Database
 
@@ -59,15 +76,15 @@ npm run db:studio    # open Prisma Studio
 ```
 src/
   app/            Next.js App Router routes, layouts, and global styles
-  lib/            Server-side utilities (Prisma client singleton, etc.)
+  components/     UI components (auth forms, layout/header, theme, brand/logo)
+  lib/            Server-side utilities (Prisma client, auth actions/guards, validation)
   generated/      Prisma Client output (generated, gitignored)
+  auth.ts         Auth.js (NextAuth v5) configuration
+  proxy.ts        Route protection (Next.js 16's replacement for middleware.ts)
 prisma/
   schema.prisma   Data model
   migrations/     Generated SQL migrations
 ```
-
-More directories (`components/`, `types/`) are added as the phases that need
-them land.
 
 ## Scripts
 

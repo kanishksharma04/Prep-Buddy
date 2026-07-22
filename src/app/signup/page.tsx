@@ -9,7 +9,10 @@ export default async function SignupPage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-16">
+    <main
+      id="main-content"
+      className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-16"
+    >
       <div className="space-y-1 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">
           Create your account
