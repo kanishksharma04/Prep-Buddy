@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
-import { subjectSchema } from "@/lib/validation/subject";
+import { subjectSchema, examDateSchema } from "@/lib/validation/subject";
 
 export type SubjectFormState = { error?: string; ok?: boolean } | undefined;
 
@@ -67,6 +67,36 @@ export async function renameSubjectAction(
     return { error: "Subject not found" };
   }
 
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
+export async function updateExamDateAction(
+  _prevState: SubjectFormState,
+  formData: FormData,
+): Promise<SubjectFormState> {
+  const user = await requireUser();
+
+  const id = formData.get("id");
+  if (typeof id !== "string" || !id) {
+    return { error: "Invalid subject" };
+  }
+
+  const parsed = examDateSchema.safeParse({ examDate: formData.get("examDate") });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const result = await db.subject.updateMany({
+    where: { id, userId: user.id },
+    data: { examDate: parsed.data.examDate ? new Date(parsed.data.examDate) : null },
+  });
+
+  if (result.count === 0) {
+    return { error: "Subject not found" };
+  }
+
+  revalidatePath(`/subjects/${id}`);
   revalidatePath("/dashboard");
   return { ok: true };
 }

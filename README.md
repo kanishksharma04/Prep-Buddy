@@ -80,6 +80,13 @@ and is also stored in Vercel's Production/Preview/Development env vars.
 - Actions: [src/lib/actions/topics.ts](./src/lib/actions/topics.ts) — every mutation re-derives the topic via `findFirst({ where: { id, subject: { userId } } })` before acting, so ownership is checked through the `Subject` relation (Topic has no direct `userId`).
 - Validation: [src/lib/validation/topic.ts](./src/lib/validation/topic.ts).
 
+## Progress & countdown
+
+- Progress bar: [src/components/subjects/progress-bar.tsx](./src/components/subjects/progress-bar.tsx) — `done / total` topics as a percentage, with `role="progressbar"` + `aria-value*` attributes. Shown on the subject detail page; the dashboard cards pick it up in Phase 8.
+- Exam date: [src/components/subjects/exam-date-picker.tsx](./src/components/subjects/exam-date-picker.tsx) — its own small form/action (`updateExamDateAction` in [src/lib/actions/subjects.ts](./src/lib/actions/subjects.ts)) so the subject page can set/clear the date without touching the name, alongside the full rename form already on the dashboard.
+- Countdown: [src/components/subjects/countdown.tsx](./src/components/subjects/countdown.tsx) wraps the pure logic in [src/lib/countdown.ts](./src/lib/countdown.ts) (`getCountdown(examDate, now)` — easy to unit-test in isolation, verified against the exact spec boundaries: green `> 7d`, amber `<= 7d`, red `<= 2d`, grey once past). Ticks every 60s client-side; starts as a client-only `null` state filled in after mount rather than computed during the initial render, to avoid an SSR/hydration mismatch on the displayed hour.
+- No-date and past-date cases are both handled explicitly ("No exam date set" / "Exam passed"), not just left to render whatever `Invalid Date` would produce.
+
 ## Database
 
 - Schema: [prisma/schema.prisma](./prisma/schema.prisma) — `User` → `Subject` → `Topic`, cascade deletes on both relations.

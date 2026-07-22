@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
-import { formatDate } from "@/lib/format";
 import { AddTopicsForm } from "@/components/topics/add-topics-form";
 import { TopicRow } from "@/components/topics/topic-row";
+import { ExamDatePicker } from "@/components/subjects/exam-date-picker";
+import { Countdown } from "@/components/subjects/countdown";
+import { ProgressBar } from "@/components/subjects/progress-bar";
 
 export default async function SubjectPage({
   params,
@@ -22,6 +24,8 @@ export default async function SubjectPage({
     notFound();
   }
 
+  const doneCount = subject.topics.filter((topic) => topic.isDone).length;
+
   return (
     <main
       id="main-content"
@@ -35,10 +39,14 @@ export default async function SubjectPage({
           ← Dashboard
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">{subject.name}</h1>
-        <p className="text-muted-foreground text-sm">
-          {subject.examDate ? `Exam: ${formatDate(subject.examDate)}` : "No exam date set"}
-        </p>
       </div>
+
+      <div className="border-border flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-end sm:justify-between">
+        <ExamDatePicker subjectId={subject.id} examDate={subject.examDate} />
+        <Countdown examDate={subject.examDate} />
+      </div>
+
+      <ProgressBar total={subject.topics.length} done={doneCount} />
 
       <AddTopicsForm subjectId={subject.id} />
 
