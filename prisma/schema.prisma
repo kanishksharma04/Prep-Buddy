@@ -1,0 +1,44 @@
+// Prisma schema for Prep Buddy.
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  subjects     Subject[]
+}
+
+model Subject {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  examDate  DateTime?
+  order     Int       @default(0)
+  createdAt DateTime  @default(now())
+  topics    Topic[]
+
+  @@index([userId])
+}
+
+model Topic {
+  id        String   @id @default(cuid())
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title     String
+  isDone    Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([subjectId])
+}
