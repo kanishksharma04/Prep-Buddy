@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Don't advertise the framework in responses.
+  poweredByHeader: false,
 };
 
 export default nextConfig;

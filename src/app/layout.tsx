@@ -17,9 +17,43 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "http://localhost:3000";
+
+const description =
+  "A minimalistic study planner: track your syllabus, check off topics, and count down to exam day.";
+
 export const metadata: Metadata = {
-  title: "Prep Buddy",
-  description: "A minimalistic study planner: track your syllabus and count down to exam day.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Prep Buddy",
+    template: "%s · Prep Buddy",
+  },
+  description,
+  applicationName: "Prep Buddy",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  openGraph: {
+    title: "Prep Buddy",
+    description,
+    siteName: "Prep Buddy",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Prep Buddy",
+    description,
+  },
+};
+
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default function RootLayout({

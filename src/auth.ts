@@ -7,6 +7,10 @@ import { loginSchema } from "@/lib/validation/auth";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
+  // Vercel deployments auto-detect a trusted host; self-hosted `next start`
+  // doesn't, and throws UntrustedHost without this. Safe here since we're a
+  // single-origin app, not a reverse proxy fronting multiple hostnames.
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {

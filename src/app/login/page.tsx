@@ -2,11 +2,17 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { LoginForm } from "@/components/auth/login-form";
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const session = await auth();
   if (session?.user) {
     redirect("/dashboard");
   }
+
+  const { error } = await searchParams;
 
   return (
     <main
@@ -19,6 +25,14 @@ export default async function LoginPage() {
           Welcome back to Prep Buddy.
         </p>
       </div>
+      {error ? (
+        <p
+          role="alert"
+          className="max-w-sm text-center text-sm text-red-600 dark:text-red-400"
+        >
+          Please log in to continue.
+        </p>
+      ) : null}
       <LoginForm />
     </main>
   );

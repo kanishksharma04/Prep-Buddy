@@ -4,8 +4,8 @@ A minimalistic study-planner web app. Create subjects, paste in your syllabus
 as topics, check them off as you study, and track a live countdown to each
 exam date.
 
-> Status: work in progress, being built phase by phase. This README will
-> gain a full setup/deploy section in later phases.
+> Status: feature-complete, built phase by phase. See "Deployment" below for
+> what's already configured and what's left to do.
 
 ## Tech stack
 
@@ -43,6 +43,13 @@ See [.env.example](./.env.example) for the full list. In short:
 the Vercel Neon integration (`vercel install neon`) and kept in sync via
 `vercel env pull`. `AUTH_SECRET` was generated once with `npx auth secret`
 and is also stored in Vercel's Production/Preview/Development env vars.
+
+All three are validated at process startup — [src/lib/env.ts](./src/lib/env.ts)
+parses `process.env` with Zod and throws immediately with a specific message
+if anything is missing or empty, and [src/instrumentation.ts](./src/instrumentation.ts)
+imports it via Next's `register()` hook so a misconfigured deploy fails at
+boot with a clear reason instead of on the first request that happens to
+touch the database.
 
 ## Authentication
 
@@ -103,6 +110,16 @@ and is also stored in Vercel's Production/Preview/Development env vars.
 - Automated a11y audit: ran axe-core (`@axe-core/playwright`) against every page in both themes, plus the confirm dialog open — **0 violations**. Also verified with real keyboard interaction (not just static analysis): the confirm dialog opens on Enter, Escape closes it, and Tab cycles focus between its two buttons only (a `document.body` tick appears once per cycle — confirmed this is benign native `<dialog>`/inert-boundary wraparound behavior, not an escape to real page content, by checking focus never lands on anything outside the dialog across many tab presses).
 - Mobile: audited every page at a 375px viewport for horizontal overflow (script-checked `scrollWidth` against the viewport, not just a visual glance) — found none, but did find the header's logo wordmark wrapping to two lines under viewport pressure; fixed with `whitespace-nowrap` on the wordmark plus `flex-wrap` on the header so the nav wraps to its own line instead of squeezing the logo.
 
+## Production readiness
+
+- Env validation: see above — fails fast at boot, not on first use.
+- Meta tags: [src/app/layout.tsx](./src/app/layout.tsx) — `metadataBase` (derived from Vercel's `VERCEL_PROJECT_PRODUCTION_URL` env var, falling back to `localhost:3000`), title template, description, Open Graph + Twitter card tags, per-theme `theme-color`. Deliberately set `robots: { index: false, follow: false }` since this is a personal/private planner, not a marketing site — flip that in `layout.tsx` if you want it publicly indexed.
+- OG/Twitter image: [src/app/opengraph-image.tsx](./src/app/opengraph-image.tsx) — generated at build time with `next/og`'s `ImageResponse` (no external image asset needed), reusing the same logo mark and brand colors as the header.
+- Favicon: [src/app/icon.svg](./src/app/icon.svg) (Phase 4).
+- 404 page: [src/app/not-found.tsx](./src/app/not-found.tsx) — branded, links back to `/` (which routes to the dashboard or landing page depending on session).
+- Auth error surfacing: if Auth.js redirects here with `?error=...` (e.g. a stale session bounced by the `authorized` callback), [src/app/login/page.tsx](./src/app/login/page.tsx) shows a message instead of silently landing on a blank login form.
+- `next.config.ts`: `poweredByHeader: false` (don't advertise the framework), Turbopack root pinned (Phase 1, avoids a monorepo/lockfile misdetection).
+
 ## Database
 
 - Schema: [prisma/schema.prisma](./prisma/schema.prisma) — `User` → `Subject` → `Topic`, cascade deletes on both relations.
@@ -118,16 +135,91 @@ npm run db:studio    # open Prisma Studio
 
 ```
 src/
-  app/            Next.js App Router routes, layouts, and global styles
+  app/            Next.js App Router routes, layouts, global styles, metadata (og image, icon, not-found)
   components/     UI components (auth forms, subjects, topics, layout/header, theme, brand/logo, ui/ shared primitives)
-  lib/            Server-side utilities (Prisma client, auth actions/guards, validation)
+  lib/            Server-side utilities (Prisma client, env validation, auth actions/guards, validation)
   generated/      Prisma Client output (generated, gitignored)
   auth.ts         Auth.js (NextAuth v5) configuration
   proxy.ts        Route protection (Next.js 16's replacement for middleware.ts)
+  instrumentation.ts  Runs env validation once at server boot
 prisma/
   schema.prisma   Data model
   migrations/     Generated SQL migrations
 ```
+
+## Deployment
+
+The Vercel project and Neon database were provisioned during development
+(via the Vercel CLI), so most of this is **already done** — this section is
+both a record of that and a checklist if you ever need to redo it from
+scratch (new Vercel account, new Neon project, etc.).
+
+### Already configured
+
+- **Vercel project** `prep-buddy` under your Vercel team, linked to this
+  local directory (`.vercel/project.json`, gitignored) and connected to the
+  `kanishksharma04/Prep-Buddy` GitHub repo with `main` as the production
+  branch — confirmed via `vercel project inspect` and the Vercel API. Pushing
+  to `main` triggers an automatic production deploy; every other branch/PR
+  gets a preview deploy. Framework preset, build command, and install
+  command are all auto-detected correctly (Next.js / `next build` / `npm
+  install`).
+- **Neon Postgres database**, provisioned through the Vercel Neon
+  integration (`vercel install neon`) and connected to the project.
+- **Environment variables**, present in Vercel for all three environments
+  (Production, Preview, Development) — confirmed via `vercel env ls`:
+  - `DATABASE_URL`, `DATABASE_URL_UNPOOLED` (from the Neon integration)
+  - `AUTH_SECRET` (generated with `npx auth secret`, added manually)
+  - A handful of other `PG*`/`POSTGRES_*`/Neon-specific vars the integration
+    also adds — unused by this app (we only read the three above), harmless
+    to leave in place.
+- **Database schema**: the `init` migration has already been applied to the
+  real Neon database (`prisma/migrations/`), not just written locally.
+
+### What's left — one thing
+
+- **Run the migration on deploy.** `next build` does not run
+  `prisma migrate deploy`. Since the schema hasn't changed since the initial
+  migration, the very first deploy doesn't strictly need this, but any
+  future schema change will. Set the Vercel project's Build Command to:
+  ```
+  npx prisma migrate deploy && npm run build
+  ```
+  (Project Settings → Build & Development Settings → Build Command, in the
+  Vercel dashboard — this isn't something the CLI config in this repo can
+  set for you.)
+
+### To actually deploy
+
+Nothing here has been pushed or deployed — that's on you:
+
+```bash
+git push                 # if origin/main is behind
+```
+
+Once GitHub has your commits, Vercel deploys `main` automatically. To watch
+it or trigger one manually instead:
+
+```bash
+vercel ls                # list recent deployments
+vercel --prod             # manually trigger a production deployment
+```
+
+### If you ever start over on a fresh Vercel/Neon account
+
+1. `vercel link` to create/link a Vercel project.
+2. `vercel install neon` to provision Postgres and connect it — this sets
+   `DATABASE_URL`/`DATABASE_URL_UNPOOLED` for you.
+3. Generate and add the auth secret:
+   ```bash
+   AUTH_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")
+   printf '%s' "$AUTH_SECRET" | vercel env add AUTH_SECRET production
+   printf '%s' "$AUTH_SECRET" | vercel env add AUTH_SECRET preview
+   printf '%s' "$AUTH_SECRET" | vercel env add AUTH_SECRET development
+   ```
+4. `vercel env pull .env.local` and `npm run db:migrate` to apply the schema.
+5. Set the Build Command override described above.
+6. Push to `main` (or `vercel --prod`).
 
 ## Scripts
 
