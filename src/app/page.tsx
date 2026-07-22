@@ -1,4 +1,9 @@
-export default function Home() {
+import { auth } from "@/auth";
+
+export default async function Home() {
+  const session = await auth();
+  const isLoggedIn = !!session?.user;
+
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
       <div className="space-y-3">
@@ -12,24 +17,30 @@ export default function Home() {
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <a
-          href="/signup"
-          className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        >
-          Get started
-        </a>
-        <a
-          href="/login"
-          className="border-border rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        >
-          Log in
-        </a>
+        {isLoggedIn ? (
+          <a
+            href="/dashboard"
+            className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
+            Go to dashboard
+          </a>
+        ) : (
+          <>
+            <a
+              href="/signup"
+              className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              Get started
+            </a>
+            <a
+              href="/login"
+              className="border-border rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              Log in
+            </a>
+          </>
+        )}
       </div>
-
-      <p className="text-muted-foreground text-xs">
-        Auth and dashboard land in a later phase — this is the Phase 1
-        placeholder.
-      </p>
     </main>
   );
 }
