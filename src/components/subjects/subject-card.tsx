@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 import { renameSubjectAction, deleteSubjectAction } from "@/lib/actions/subjects";
 import { formatDate, toDateInputValue } from "@/lib/format";
 
@@ -95,12 +96,23 @@ export function SubjectCard({ subject }: { subject: Subject }) {
   return (
     <li className="border-border flex flex-wrap items-center justify-between gap-4 rounded-lg border p-4">
       <div>
-        <p className="font-medium">{subject.name}</p>
+        <Link
+          href={`/subjects/${subject.id}`}
+          className="font-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          {subject.name}
+        </Link>
         <p className="text-muted-foreground text-sm">
           {subject.examDate ? `Exam: ${formatDate(subject.examDate)}` : "No exam date set"}
         </p>
       </div>
       <div className="flex shrink-0 gap-2">
+        <Link
+          href={`/subjects/${subject.id}`}
+          className="border-border rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          Topics
+        </Link>
         <button
           type="button"
           onClick={() => setIsEditing(true)}

@@ -48,7 +48,7 @@ and is also stored in Vercel's Production/Preview/Development env vars.
 
 - Config: [src/auth.ts](./src/auth.ts) — Auth.js (NextAuth v5) with a single Credentials provider, JWT session strategy (no database sessions/adapter — sessions aren't part of the data model).
 - `authorize()` looks up the user by email via Prisma and checks the password with `bcryptjs`.
-- Route protection: [src/proxy.ts](./src/proxy.ts) (Next.js 16 renamed `middleware.ts` → `proxy.ts`) matches `/dashboard/:path*` and defers the allow/deny decision to the `authorized` callback in `src/auth.ts`.
+- Route protection: [src/proxy.ts](./src/proxy.ts) (Next.js 16 renamed `middleware.ts` → `proxy.ts`) matches `/dashboard/:path*` and `/subjects/:path*`, deferring the allow/deny decision to the `authorized` callback in `src/auth.ts`.
 - Server Actions ([src/lib/actions/auth.ts](./src/lib/actions/auth.ts)) aren't covered by the proxy matcher (Server Actions are POSTs to the page route, not separate routes), so every mutation must independently check the session — see [src/lib/auth-guard.ts](./src/lib/auth-guard.ts)'s `requireUser()`, used by the dashboard page.
 - Pages: `/signup` and `/login` (redirect to `/dashboard` if already signed in), `/dashboard` (subjects list — see below).
 - Validation: [src/lib/validation/auth.ts](./src/lib/validation/auth.ts) — Zod schemas for login/signup, including password-confirmation matching.
@@ -68,6 +68,18 @@ and is also stored in Vercel's Production/Preview/Development env vars.
 - Actions: [src/lib/actions/subjects.ts](./src/lib/actions/subjects.ts) — Zod-validated, and every mutation is scoped with `where: { id, userId }` (via `updateMany`/`deleteMany`) so one user can never touch another's subjects, even if they guess an id.
 - Validation: [src/lib/validation/subject.ts](./src/lib/validation/subject.ts).
 
+## Topics
+
+- Subject detail page ([src/app/subjects/[id]/page.tsx](./src/app/subjects/[id]/page.tsx)) — fetches the subject scoped to the signed-in user (`findFirst({ where: { id, userId } })`) and 404s via `notFound()` if it doesn't exist or isn't theirs; lists its topics ordered by `order`.
+- Add: [src/components/topics/add-topics-form.tsx](./src/components/topics/add-topics-form.tsx) — one textarea, one topic per line, so a single topic and a full pasted syllabus go through the same field. Blank lines are filtered; capped at 500 topics per submission.
+- Edit / delete / reorder / check off: [src/components/topics/topic-row.tsx](./src/components/topics/topic-row.tsx).
+  - Check/uncheck uses `useOptimistic` — the checkbox and strikethrough update instantly, the server call happens in the background, and a failed/slow request would leave the row out of sync with the next revalidated fetch (acceptable for a checkbox; not silently reverted).
+  - Reorder is up/down buttons (not drag-and-drop, to avoid pulling in a DnD library) — swaps the `order` value with the adjacent topic in a `$transaction`. Keyboard-operable by default.
+  - Edit is inline (click "Edit" → input + Save/Cancel), same pattern as subject rename.
+  - Delete has the same native-`confirm()` guard as subjects.
+- Actions: [src/lib/actions/topics.ts](./src/lib/actions/topics.ts) — every mutation re-derives the topic via `findFirst({ where: { id, subject: { userId } } })` before acting, so ownership is checked through the `Subject` relation (Topic has no direct `userId`).
+- Validation: [src/lib/validation/topic.ts](./src/lib/validation/topic.ts).
+
 ## Database
 
 - Schema: [prisma/schema.prisma](./prisma/schema.prisma) — `User` → `Subject` → `Topic`, cascade deletes on both relations.
@@ -84,7 +96,7 @@ npm run db:studio    # open Prisma Studio
 ```
 src/
   app/            Next.js App Router routes, layouts, and global styles
-  components/     UI components (auth forms, subjects, layout/header, theme, brand/logo)
+  components/     UI components (auth forms, subjects, topics, layout/header, theme, brand/logo)
   lib/            Server-side utilities (Prisma client, auth actions/guards, validation)
   generated/      Prisma Client output (generated, gitignored)
   auth.ts         Auth.js (NextAuth v5) configuration

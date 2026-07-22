@@ -43,7 +43,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     authorized({ auth, request }) {
       const isLoggedIn = !!auth?.user;
-      const isProtectedRoute = request.nextUrl.pathname.startsWith("/dashboard");
+      const { pathname } = request.nextUrl;
+      const isProtectedRoute =
+        pathname.startsWith("/dashboard") || pathname.startsWith("/subjects");
       return isProtectedRoute ? isLoggedIn : true;
     },
   },
