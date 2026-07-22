@@ -62,7 +62,7 @@ and is also stored in Vercel's Production/Preview/Development env vars.
 
 ## Subjects
 
-- Dashboard ([src/app/dashboard/page.tsx](./src/app/dashboard/page.tsx)) fetches the signed-in user's subjects (`orderBy: { order: "asc" }`) and renders them as cards, with an empty state when there are none.
+- Dashboard ([src/app/dashboard/page.tsx](./src/app/dashboard/page.tsx)) fetches the signed-in user's subjects (with each one's topics, for progress) and renders them as cards sorted by nearest upcoming exam, with an empty state when there are none.
 - Create: [src/components/subjects/create-subject-form.tsx](./src/components/subjects/create-subject-form.tsx) — name + optional exam date, resets itself on success.
 - Rename/delete: [src/components/subjects/subject-card.tsx](./src/components/subjects/subject-card.tsx) — inline edit-in-place for rename, native `confirm()` before delete (a proper accessible dialog lands in Phase 9).
 - Actions: [src/lib/actions/subjects.ts](./src/lib/actions/subjects.ts) — Zod-validated, and every mutation is scoped with `where: { id, userId }` (via `updateMany`/`deleteMany`) so one user can never touch another's subjects, even if they guess an id.
@@ -82,10 +82,16 @@ and is also stored in Vercel's Production/Preview/Development env vars.
 
 ## Progress & countdown
 
-- Progress bar: [src/components/subjects/progress-bar.tsx](./src/components/subjects/progress-bar.tsx) — `done / total` topics as a percentage, with `role="progressbar"` + `aria-value*` attributes. Shown on the subject detail page; the dashboard cards pick it up in Phase 8.
+- Progress bar: [src/components/subjects/progress-bar.tsx](./src/components/subjects/progress-bar.tsx) — `done / total` topics as a percentage, with `role="progressbar"` + `aria-value*` attributes. Shown on the subject detail page and on every dashboard card.
 - Exam date: [src/components/subjects/exam-date-picker.tsx](./src/components/subjects/exam-date-picker.tsx) — its own small form/action (`updateExamDateAction` in [src/lib/actions/subjects.ts](./src/lib/actions/subjects.ts)) so the subject page can set/clear the date without touching the name, alongside the full rename form already on the dashboard.
 - Countdown: [src/components/subjects/countdown.tsx](./src/components/subjects/countdown.tsx) wraps the pure logic in [src/lib/countdown.ts](./src/lib/countdown.ts) (`getCountdown(examDate, now)` — easy to unit-test in isolation, verified against the exact spec boundaries: green `> 7d`, amber `<= 7d`, red `<= 2d`, grey once past). Ticks every 60s client-side; starts as a client-only `null` state filled in after mount rather than computed during the initial render, to avoid an SSR/hydration mismatch on the displayed hour.
 - No-date and past-date cases are both handled explicitly ("No exam date set" / "Exam passed"), not just left to render whatever `Invalid Date` would produce.
+
+## Dashboard sorting & summary
+
+- Sorting: [src/lib/sort-subjects.ts](./src/lib/sort-subjects.ts) — `sortByNearestExam` puts the soonest upcoming exam first; subjects with no exam date, or one that's already passed, sink to the end (tiebroken by creation order). `findNextExam` reuses the same "in the future" check for the summary strip.
+  - Both take `now` as an explicit parameter rather than reading `Date.now()`/`new Date()` inline in the page component — a newer `eslint-plugin-react-hooks` rule (`react-hooks/purity`) flags impure calls made directly in a component/render body, since Next 16's Cache Components model can memoize a Server Component's output across requests; keeping the "current time" call inside a plain function (not the component itself) keeps that assumption safe if this page ever opts into caching.
+- Summary strip: [src/components/subjects/summary-strip.tsx](./src/components/subjects/summary-strip.tsx) — total topics, done topics, and the next upcoming exam (subject name + date), computed from the same data already fetched for the cards. Only shown once there's at least one subject.
 
 ## Database
 

@@ -1,15 +1,29 @@
 import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
+import { sortByNearestExam, findNextExam } from "@/lib/sort-subjects";
 import { CreateSubjectForm } from "@/components/subjects/create-subject-form";
 import { SubjectCard } from "@/components/subjects/subject-card";
+import { SummaryStrip } from "@/components/subjects/summary-strip";
 
 export default async function DashboardPage() {
   const user = await requireUser();
 
-  const subjects = await db.subject.findMany({
+  const subjectsRaw = await db.subject.findMany({
     where: { userId: user.id },
-    orderBy: { order: "asc" },
+    include: { topics: { select: { isDone: true } } },
   });
+
+  const subjects = sortByNearestExam(
+    subjectsRaw.map((subject) => ({
+      ...subject,
+      topicsTotal: subject.topics.length,
+      topicsDone: subject.topics.filter((topic) => topic.isDone).length,
+    })),
+  );
+
+  const totalTopics = subjects.reduce((sum, s) => sum + s.topicsTotal, 0);
+  const doneTopics = subjects.reduce((sum, s) => sum + s.topicsDone, 0);
+  const nextExamSubject = findNextExam(subjects);
 
   return (
     <main
@@ -22,6 +36,18 @@ export default async function DashboardPage() {
           Signed in as {user.email}
         </p>
       </div>
+
+      {subjects.length > 0 ? (
+        <SummaryStrip
+          totalTopics={totalTopics}
+          doneTopics={doneTopics}
+          nextExam={
+            nextExamSubject
+              ? { subjectName: nextExamSubject.name, examDate: nextExamSubject.examDate! }
+              : null
+          }
+        />
+      ) : null}
 
       <CreateSubjectForm />
 
