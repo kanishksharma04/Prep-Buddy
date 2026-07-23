@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useOptimistic, useState, useTransition } from "react";
+import { useActionState, useEffect, useOptimistic, useState, useTransition } from "react";
 import {
   editTopicAction,
   deleteTopicAction,
@@ -35,6 +35,14 @@ export function TopicRow({
   const [state, formAction, isPending] = useActionState(editTopicAction, undefined);
   const { showToast } = useToast();
 
+  // showToast reaches into ToastProvider's state, so it needs an effect
+  // (see subject-card.tsx).
+  useEffect(() => {
+    if (state?.ok) {
+      showToast("Topic updated");
+    }
+  }, [state, showToast]);
+
   // Close the edit form once the save succeeds — derived during render
   // (see subject-card.tsx for why this isn't a useEffect).
   const [handledState, setHandledState] = useState(state);
@@ -42,7 +50,6 @@ export function TopicRow({
     setHandledState(state);
     if (state?.ok) {
       setIsEditing(false);
-      showToast("Topic updated");
     }
   }
 

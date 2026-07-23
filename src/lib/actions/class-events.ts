@@ -13,9 +13,15 @@ export async function createClassEventAction(
 ): Promise<ClassEventFormState> {
   const user = await requireUser();
 
+  const startDate = String(formData.get("startDate") ?? "").trim();
+  const endDateRaw = String(formData.get("endDate") ?? "").trim();
+  // Leaving "end date" blank means a single-day class on the start date.
+  const endDate = endDateRaw || startDate;
+
   const parsed = classEventSchema.safeParse({
     title: formData.get("title"),
-    date: formData.get("date"),
+    startDate,
+    endDate,
     link: formData.get("link"),
     subjectId: formData.get("subjectId"),
   });
@@ -40,7 +46,8 @@ export async function createClassEventAction(
       userId: user.id,
       subjectId,
       title: parsed.data.title,
-      date: new Date(parsed.data.date),
+      startDate: new Date(parsed.data.startDate),
+      endDate: new Date(parsed.data.endDate),
       link: parsed.data.link ? parsed.data.link : null,
     },
   });
@@ -49,42 +56,73 @@ export async function createClassEventAction(
   return { ok: true };
 }
 
-// Bulk row: one date + one join-class link per existing subject, all saved
-// in a single submit. Rows with no date chosen are skipped; a link with no
-// date is meaningless since a class event needs a day.
+// Bulk rows: each row independently picks a subject + date range + optional
+// join link, saved together in one submit. Sent as parallel indexed arrays
+// (subjectId[], startDate[], endDate[], link[]) since rows are added/removed
+// client-side rather than being fixed one-per-subject.
 export async function createClassLinksForSubjectsAction(
   _prevState: ClassEventFormState,
   formData: FormData,
 ): Promise<ClassEventFormState> {
   const user = await requireUser();
 
-  const subjects = await db.subject.findMany({
+  const subjectIds = formData.getAll("subjectId[]").map(String);
+  const startDates = formData.getAll("startDate[]").map(String);
+  const endDates = formData.getAll("endDate[]").map(String);
+  const links = formData.getAll("link[]").map(String);
+
+  const userSubjects = await db.subject.findMany({
     where: { userId: user.id },
     select: { id: true, name: true },
   });
+  const subjectNameById = new Map(userSubjects.map((s) => [s.id, s.name]));
 
-  const toCreate: { userId: string; subjectId: string; title: string; date: Date; link: string | null }[] = [];
+  const toCreate: {
+    userId: string;
+    subjectId: string;
+    title: string;
+    startDate: Date;
+    endDate: Date;
+    link: string | null;
+  }[] = [];
   const errors: string[] = [];
 
-  for (const subject of subjects) {
-    const dateRaw = formData.get(`date-${subject.id}`);
-    const linkRaw = formData.get(`link-${subject.id}`);
-    const date = typeof dateRaw === "string" ? dateRaw.trim() : "";
-    const link = typeof linkRaw === "string" ? linkRaw.trim() : "";
+  for (let i = 0; i < subjectIds.length; i++) {
+    const subjectId = subjectIds[i]?.trim() ?? "";
+    const startDate = startDates[i]?.trim() ?? "";
+    const endDateRaw = endDates[i]?.trim() ?? "";
+    const link = links[i]?.trim() ?? "";
 
-    if (!date) continue;
+    // A row with no subject chosen or no start date is incomplete — skip it
+    // rather than erroring, so partially-filled rows don't block the rest.
+    if (!subjectId || !startDate) continue;
 
-    const parsed = classEventSchema.safeParse({ title: subject.name, date, link, subjectId: subject.id });
+    const subjectName = subjectNameById.get(subjectId);
+    if (!subjectName) {
+      errors.push(`Row ${i + 1}: subject not found`);
+      continue;
+    }
+
+    const endDate = endDateRaw || startDate;
+
+    const parsed = classEventSchema.safeParse({
+      title: subjectName,
+      startDate,
+      endDate,
+      link,
+      subjectId,
+    });
     if (!parsed.success) {
-      errors.push(`${subject.name}: ${parsed.error.issues[0]?.message ?? "Invalid input"}`);
+      errors.push(`${subjectName}: ${parsed.error.issues[0]?.message ?? "Invalid input"}`);
       continue;
     }
 
     toCreate.push({
       userId: user.id,
-      subjectId: subject.id,
+      subjectId,
       title: parsed.data.title,
-      date: new Date(parsed.data.date),
+      startDate: new Date(parsed.data.startDate),
+      endDate: new Date(parsed.data.endDate),
       link: parsed.data.link || null,
     });
   }
@@ -93,7 +131,7 @@ export async function createClassLinksForSubjectsAction(
     return { error: errors.join("; ") };
   }
   if (toCreate.length === 0) {
-    return { error: "Choose a date for at least one subject" };
+    return { error: "Add at least one subject with a start date" };
   }
 
   await db.classEvent.createMany({ data: toCreate });

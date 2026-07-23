@@ -4,10 +4,25 @@ import { useActionState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { createClassEventAction, deleteClassEventAction } from "@/lib/actions/class-events";
 import { useToast } from "@/components/ui/toast-context";
+import { utcDateKey, utcDateToLocalCalendarDate } from "@/lib/calendar";
 
 type ExamMarker = { subjectId: string; subjectName: string };
-type ClassMarker = { id: string; title: string; link: string | null; subjectName: string | null };
+type ClassMarker = {
+  id: string;
+  title: string;
+  link: string | null;
+  subjectName: string | null;
+  startDate: Date;
+  endDate: Date;
+};
 type Subject = { id: string; name: string };
+
+function formatRange(start: Date, end: Date): string | null {
+  if (utcDateKey(start) === utcDateKey(end)) return null;
+  const fmt = (d: Date) =>
+    utcDateToLocalCalendarDate(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return `${fmt(start)} – ${fmt(end)}`;
+}
 
 export function DayDetailDialog({
   dayKey,
@@ -113,6 +128,11 @@ export function DayDetailDialog({
                     {event.subjectName ? (
                       <p className="text-muted-foreground text-xs">{event.subjectName}</p>
                     ) : null}
+                    {formatRange(event.startDate, event.endDate) ? (
+                      <p className="text-muted-foreground text-xs">
+                        {formatRange(event.startDate, event.endDate)}
+                      </p>
+                    ) : null}
                     {event.link ? (
                       <a
                         href={event.link}
@@ -139,7 +159,7 @@ export function DayDetailDialog({
         </div>
 
         <form ref={formRef} action={formAction} className="border-border space-y-3 border-t pt-4">
-          <input type="hidden" name="date" value={dayKey} />
+          <input type="hidden" name="startDate" value={dayKey} />
           <h3 className="text-sm font-medium">Add a class</h3>
           <div className="space-y-1.5">
             <label htmlFor="class-title" className="text-xs font-medium">
@@ -151,6 +171,18 @@ export function DayDetailDialog({
               required
               maxLength={100}
               placeholder="e.g. Chemistry lecture"
+              className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="class-end-date" className="text-xs font-medium">
+              End date (optional — for multi-day classes)
+            </label>
+            <input
+              id="class-end-date"
+              name="endDate"
+              type="date"
+              min={dayKey}
               className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>

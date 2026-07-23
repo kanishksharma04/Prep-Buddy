@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect } from "react";
 import { updateExamDateAction } from "@/lib/actions/subjects";
 import { toDateInputValue } from "@/lib/format";
 import { useToast } from "@/components/ui/toast-context";
@@ -15,15 +15,13 @@ export function ExamDatePicker({
   const [state, formAction, isPending] = useActionState(updateExamDateAction, undefined);
   const { showToast } = useToast();
 
-  // Toast on success — derived during render rather than a useEffect, same
-  // reasoning as the edit-mode-close pattern in subject-card.tsx.
-  const [handledState, setHandledState] = useState(state);
-  if (state !== handledState) {
-    setHandledState(state);
+  // showToast reaches into ToastProvider's state (a different component),
+  // so it must run in an effect, not during render (see subject-card.tsx).
+  useEffect(() => {
     if (state?.ok) {
       showToast("Exam date updated");
     }
-  }
+  }, [state, showToast]);
 
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">

@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     db.classEvent.findMany({
       where: { userId: user.id },
       include: { subject: { select: { name: true } } },
-      orderBy: { date: "asc" },
+      orderBy: { startDate: "asc" },
     }),
   ]);
 
@@ -47,7 +47,8 @@ export default async function DashboardPage() {
     title: event.title,
     link: event.link,
     subjectName: event.subject?.name ?? null,
-    date: event.date,
+    startDate: event.startDate,
+    endDate: event.endDate,
   }));
 
   const subjectOptions = subjectsRaw.map((subject) => ({ id: subject.id, name: subject.name }));

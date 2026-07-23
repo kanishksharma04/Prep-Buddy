@@ -40,7 +40,8 @@ model ClassEvent {
   subjectId String?
   subject   Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
   title     String
-  date      DateTime
+  startDate DateTime
+  endDate   DateTime
   link      String?
   createdAt DateTime @default(now())
 

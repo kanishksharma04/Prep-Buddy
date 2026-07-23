@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { renameSubjectAction, deleteSubjectAction } from "@/lib/actions/subjects";
 import { formatDate, toDateInputValue } from "@/lib/format";
@@ -23,6 +23,16 @@ export function SubjectCard({ subject }: { subject: Subject }) {
   const [state, formAction, isPending] = useActionState(renameSubjectAction, undefined);
   const { showToast } = useToast();
 
+  // showToast reaches into ToastProvider's state — a different component —
+  // so it must run in an effect, not during render (unlike setIsEditing,
+  // this component's own state, which the derived-render pattern below
+  // updates safely without one).
+  useEffect(() => {
+    if (state?.ok) {
+      showToast(`"${subject.name}" updated`);
+    }
+  }, [state, showToast, subject.name]);
+
   // Close the edit form once the rename succeeds. Derived during render
   // (React's recommended pattern) rather than in a useEffect, which would
   // cause an extra cascading render.
@@ -31,7 +41,6 @@ export function SubjectCard({ subject }: { subject: Subject }) {
     setHandledState(state);
     if (state?.ok) {
       setIsEditing(false);
-      showToast(`"${subject.name}" updated`);
     }
   }
 

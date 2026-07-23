@@ -60,6 +60,29 @@ export function utcDateKey(date: Date): string {
   return dateKey(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 }
 
+// A ClassEvent's own local-calendar Y/M/D, recovered from its UTC-midnight
+// storage — safe to feed into toLocaleDateString etc. without a shift.
+export function utcDateToLocalCalendarDate(date: Date): Date {
+  return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_RANGE_DAYS = 366;
+
+// Every calendar day a [start, end] range covers, as dateKey strings — used
+// to show a multi-day class on every day it spans, not just its start.
+export function eachUtcDateKeyInRange(start: Date, end: Date): string[] {
+  const startUTC = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate());
+  const endUTC = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
+
+  const keys: string[] = [];
+  for (let t = startUTC, i = 0; t <= endUTC && i <= MAX_RANGE_DAYS; t += DAY_MS, i++) {
+    const d = new Date(t);
+    keys.push(dateKey(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  }
+  return keys;
+}
+
 export const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
