@@ -49,6 +49,59 @@ export async function createClassEventAction(
   return { ok: true };
 }
 
+// Bulk row: one date + one join-class link per existing subject, all saved
+// in a single submit. Rows with no date chosen are skipped; a link with no
+// date is meaningless since a class event needs a day.
+export async function createClassLinksForSubjectsAction(
+  _prevState: ClassEventFormState,
+  formData: FormData,
+): Promise<ClassEventFormState> {
+  const user = await requireUser();
+
+  const subjects = await db.subject.findMany({
+    where: { userId: user.id },
+    select: { id: true, name: true },
+  });
+
+  const toCreate: { userId: string; subjectId: string; title: string; date: Date; link: string | null }[] = [];
+  const errors: string[] = [];
+
+  for (const subject of subjects) {
+    const dateRaw = formData.get(`date-${subject.id}`);
+    const linkRaw = formData.get(`link-${subject.id}`);
+    const date = typeof dateRaw === "string" ? dateRaw.trim() : "";
+    const link = typeof linkRaw === "string" ? linkRaw.trim() : "";
+
+    if (!date) continue;
+
+    const parsed = classEventSchema.safeParse({ title: subject.name, date, link, subjectId: subject.id });
+    if (!parsed.success) {
+      errors.push(`${subject.name}: ${parsed.error.issues[0]?.message ?? "Invalid input"}`);
+      continue;
+    }
+
+    toCreate.push({
+      userId: user.id,
+      subjectId: subject.id,
+      title: parsed.data.title,
+      date: new Date(parsed.data.date),
+      link: parsed.data.link || null,
+    });
+  }
+
+  if (errors.length > 0) {
+    return { error: errors.join("; ") };
+  }
+  if (toCreate.length === 0) {
+    return { error: "Choose a date for at least one subject" };
+  }
+
+  await db.classEvent.createMany({ data: toCreate });
+
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
 export async function deleteClassEventAction(formData: FormData) {
   const user = await requireUser();
 

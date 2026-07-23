@@ -109,20 +109,19 @@ export function DayDetailDialog({
                   className="border-border flex items-center justify-between gap-2 rounded-md border p-2"
                 >
                   <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{event.title}</p>
+                    {event.subjectName ? (
+                      <p className="text-muted-foreground text-xs">{event.subjectName}</p>
+                    ) : null}
                     {event.link ? (
                       <a
                         href={event.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary block truncate text-sm font-medium hover:underline"
+                        className="text-primary inline-block text-xs font-medium hover:underline"
                       >
-                        {event.title}
+                        Join class →
                       </a>
-                    ) : (
-                      <p className="truncate text-sm font-medium">{event.title}</p>
-                    )}
-                    {event.subjectName ? (
-                      <p className="text-muted-foreground text-xs">{event.subjectName}</p>
                     ) : null}
                   </div>
                   <button

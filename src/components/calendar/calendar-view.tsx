@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { getMonthGrid, dateKey, utcDateKey, MONTH_NAMES, WEEKDAY_LABELS } from "@/lib/calendar";
 import { DayDetailDialog } from "./day-detail-dialog";
+import { BulkClassLinksForm } from "./bulk-class-links-form";
 
 type ExamMarker = {
   subjectId: string;
@@ -94,7 +95,9 @@ export function CalendarView({
     : null;
 
   return (
-    <div className="border-border rounded-lg border p-4">
+    <div className="flex flex-col gap-4">
+      <BulkClassLinksForm subjects={subjects} />
+      <div className="border-border rounded-lg border p-4">
       <div className="mb-4 flex items-center justify-between gap-2">
         <button
           type="button"
@@ -187,6 +190,7 @@ export function CalendarView({
           onClose={() => setSelectedKey(null)}
         />
       ) : null}
+      </div>
     </div>
   );
 }
