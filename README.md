@@ -177,6 +177,7 @@ Implementation notes for anyone extending this project.
 - Header: [src/components/layout/header.tsx](./src/components/layout/header.tsx) — logo, session-aware nav, theme toggle. Rendered once in the root layout.
 - Logo: [src/components/brand/logo-mark.tsx](./src/components/brand/logo-mark.tsx) / [logo.tsx](./src/components/brand/logo.tsx) — inline SVG (clock + open book + check), theme-aware. Favicon: [src/app/icon.svg](./src/app/icon.svg).
 - Theme: dark/light via a `.dark` class on `<html>`, persisted in `localStorage`, falling back to `prefers-color-scheme`. [theme-init-script.ts](./src/components/theme/theme-init-script.ts) runs as a `beforeInteractive` `next/script` so the class is set before first paint — no flash of the wrong theme.
+- [ThemeToggle](./src/components/theme/theme-toggle.tsx): a day/night sliding switch (sun-and-clouds ↔ moon-and-stars) instead of a plain icon button — the thumb (sun/moon) and the track's gradient/decorations all crossfade and slide via `dark:` variants, no JS animation. `role="switch"`/`aria-checked` is synced in a mount effect (same pattern as `useCountdown`: the real theme is already set by `theme-init-script.ts` before hydration, so reading `document.documentElement.classList` on mount avoids a server/client mismatch rather than guessing during render).
 - Accessibility: [skip-link.tsx](./src/components/layout/skip-link.tsx) is the first focusable element on every page, landing on `#main-content`. All interactive elements use `focus-visible` outlines.
 
 ### Subjects & topics
