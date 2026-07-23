@@ -11,24 +11,41 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
+  id           String       @id @default(cuid())
+  email        String       @unique
   passwordHash String
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime     @default(now())
   subjects     Subject[]
+  classEvents  ClassEvent[]
 }
 
 model Subject {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String
-  examDate  DateTime?
-  order     Int       @default(0)
-  createdAt DateTime  @default(now())
-  topics    Topic[]
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  examDate    DateTime?
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  topics      Topic[]
+  classEvents ClassEvent[]
 
   @@index([userId])
+}
+
+model ClassEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId String?
+  subject   Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  title     String
+  date      DateTime
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([subjectId])
 }
 
 model Topic {

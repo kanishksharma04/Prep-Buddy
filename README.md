@@ -18,7 +18,9 @@ still on — see [Deployment](#deployment))*
 - **Live exam countdown** — days + hours remaining, color-coded by urgency
   (green → amber → red as the date approaches, grey once it's passed).
 - **Dashboard** — every subject as a card, sorted by nearest exam, with a
-  summary strip (total topics, done, next exam).
+  summary strip (total topics, done, next exam), or switch to a **calendar
+  view**: exam dates appear automatically, and you can add your own class
+  entries (with an optional link) to any day.
 - **Dark / light theme**, persisted across visits, no flash of the wrong
   theme on load.
 - Confirm-before-delete dialogs, toasts on save, loading skeletons, and a
@@ -71,7 +73,7 @@ request that happens to touch the database.
 ```
 src/
   app/            Next.js App Router routes, layouts, global styles, metadata
-  components/     UI components (auth forms, subjects, topics, layout/header, theme, brand/logo, ui/ shared primitives)
+  components/     UI components (auth forms, subjects, topics, calendar, dashboard, layout/header, theme, brand/logo, ui/ shared primitives)
   lib/            Server-side utilities (Prisma client, env validation, auth actions/guards, validation)
   generated/      Prisma Client output (generated, gitignored)
   auth.ts         Auth.js (NextAuth v5) configuration
@@ -185,6 +187,14 @@ Implementation notes for anyone extending this project.
 - Topic reorder is up/down buttons, not drag-and-drop (avoids a DnD dependency) — swaps the `order` value with the adjacent topic in a `$transaction`.
 - Check/uncheck uses `useOptimistic` — instant checkbox + strikethrough, server call in the background.
 - Rename/edit are inline (click → input + Save/Cancel); delete uses [ConfirmDialog](./src/components/ui/confirm-dialog.tsx).
+
+### Calendar
+
+- Dashboard view toggle ([src/components/dashboard/view-toggle.tsx](./src/components/dashboard/view-toggle.tsx)) switches between the subjects list and a month calendar — no new dependency, a custom grid built on [src/lib/calendar.ts](./src/lib/calendar.ts)'s pure `getMonthGrid()` (unit-verified, including under a negative-UTC-offset timezone, before wiring into the UI).
+- Every subject's exam date appears on the calendar automatically (red pill) — no separate step to add it.
+- Click any day to open [DayDetailDialog](./src/components/calendar/day-detail-dialog.tsx): shows that day's exam(s) (linking to the subject) and classes, and a form to add a class — title, an optional link (e.g. a video-call URL, opens in a new tab), and an optional subject tag. Classes are their own model ([`ClassEvent`](./prisma/schema.prisma), `userId` + optional `subjectId`), not tied to a subject's exam date.
+- Dates are stored as UTC-midnight "date only" values (same convention as exam dates, see `toDateInputValue` in `format.ts`) and matched onto calendar cells via UTC getters — the classic pitfall here is a date shifting a day off in negative-UTC timezones if you mix local and UTC getters, which is exactly what the unit check above targets.
+- Actions: [src/lib/actions/class-events.ts](./src/lib/actions/class-events.ts) — create/delete, Zod-validated ([src/lib/validation/class-event.ts](./src/lib/validation/class-event.ts)), scoped to the authenticated user; if a subject is tagged, it's re-verified as belonging to that user too.
 
 ### Progress & countdown
 
