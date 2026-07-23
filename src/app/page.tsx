@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { LogoMark } from "@/components/brand/logo-mark";
+import { MouseGlow } from "@/components/brand/mouse-glow";
 
 const features = [
   {
@@ -71,10 +72,7 @@ export default async function Home() {
       id="main-content"
       className="relative flex flex-1 flex-col items-center justify-center gap-12 overflow-hidden px-6 py-16 text-center"
     >
-      <div
-        aria-hidden="true"
-        className="bg-primary/20 dark:bg-primary/25 pointer-events-none absolute top-1/4 left-1/2 h-128 w-lg -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
-      />
+      <MouseGlow />
 
       <div className="relative flex flex-col items-center gap-5">
         <LogoMark className="h-16 w-16 dark:drop-shadow-[0_0_20px_rgba(59,130,246,0.55)]" />
