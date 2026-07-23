@@ -7,6 +7,7 @@ import { TopicRow } from "@/components/topics/topic-row";
 import { ExamDatePicker } from "@/components/subjects/exam-date-picker";
 import { Countdown } from "@/components/subjects/countdown";
 import { ProgressBar } from "@/components/subjects/progress-bar";
+import { SubjectLinks } from "@/components/subjects/subject-links";
 
 export default async function SubjectPage({
   params,
@@ -18,7 +19,10 @@ export default async function SubjectPage({
 
   const subject = await db.subject.findFirst({
     where: { id, userId: user.id },
-    include: { topics: { orderBy: { order: "asc" } } },
+    include: {
+      topics: { orderBy: { order: "asc" } },
+      links: { orderBy: { order: "asc" } },
+    },
   });
   if (!subject) {
     notFound();
@@ -47,6 +51,8 @@ export default async function SubjectPage({
       </div>
 
       <ProgressBar total={subject.topics.length} done={doneCount} />
+
+      <SubjectLinks subjectId={subject.id} links={subject.links} />
 
       <AddTopicsForm subjectId={subject.id} />
 

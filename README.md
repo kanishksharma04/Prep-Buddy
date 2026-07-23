@@ -187,6 +187,7 @@ Implementation notes for anyone extending this project.
 - Topic reorder is up/down buttons, not drag-and-drop (avoids a DnD dependency) — swaps the `order` value with the adjacent topic in a `$transaction`.
 - Check/uncheck uses `useOptimistic` — instant checkbox + strikethrough, server call in the background.
 - Rename/edit are inline (click → input + Save/Cancel); delete uses [ConfirmDialog](./src/components/ui/confirm-dialog.tsx).
+- [SubjectLinks](./src/components/subjects/subject-links.tsx) — an "Important links" section on the subject detail page: a title + URL per entry (syllabus PDFs, shared docs, anything worth keeping handy), add/remove, no date attached (unlike `ClassEvent`). Own model (`SubjectLink`), scoped to the subject the same way topics are (`findFirst({ where: { id, subject: { userId } } })`, since it has no direct `userId` either).
 
 ### Calendar
 

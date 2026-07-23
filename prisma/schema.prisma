@@ -20,17 +20,30 @@ model User {
 }
 
 model Subject {
-  id          String       @id @default(cuid())
+  id          String        @id @default(cuid())
   userId      String
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String
   examDate    DateTime?
-  order       Int          @default(0)
-  createdAt   DateTime     @default(now())
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
   topics      Topic[]
   classEvents ClassEvent[]
+  links       SubjectLink[]
 
   @@index([userId])
+}
+
+model SubjectLink {
+  id        String   @id @default(cuid())
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title     String
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([subjectId])
 }
 
 model ClassEvent {
