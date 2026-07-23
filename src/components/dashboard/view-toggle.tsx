@@ -23,7 +23,7 @@ export function ViewToggle({
           role="tab"
           aria-selected={view === "list"}
           onClick={() => setView("list")}
-          className={`rounded px-3 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+          className={`rounded px-3 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
             view === "list" ? "bg-primary text-primary-foreground" : "hover:bg-surface"
           }`}
         >
@@ -34,7 +34,7 @@ export function ViewToggle({
           role="tab"
           aria-selected={view === "calendar"}
           onClick={() => setView("calendar")}
-          className={`rounded px-3 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+          className={`rounded px-3 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
             view === "calendar" ? "bg-primary text-primary-foreground" : "hover:bg-surface"
           }`}
         >

@@ -20,7 +20,7 @@ export function CreateSubjectForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="border-border flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-end"
+      className="border-border bg-background flex flex-col gap-3 rounded-lg border p-4 transition-shadow duration-200 hover:shadow-sm sm:flex-row sm:items-end"
     >
       <div className="flex-1 space-y-1.5">
         <label htmlFor="new-subject-name" className="text-sm font-medium">
@@ -51,9 +51,9 @@ export function CreateSubjectForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="bg-primary text-primary-foreground hover:shadow-primary/30 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
-        {isPending ? "Adding…" : "Add subject"}
+        {isPending ? "Adding…" : "+ Add subject"}
       </button>
 
       {state?.error ? (

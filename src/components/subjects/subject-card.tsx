@@ -8,6 +8,7 @@ import { Countdown } from "@/components/subjects/countdown";
 import { ProgressBar } from "@/components/subjects/progress-bar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast-context";
+import { useCountdown } from "@/lib/use-countdown";
 
 type Subject = {
   id: string;
@@ -17,11 +18,20 @@ type Subject = {
   topicsDone: number;
 };
 
+const ACCENT_BORDER_CLASSES = {
+  green: "border-l-green-600 dark:border-l-green-500",
+  amber: "border-l-amber-600 dark:border-l-amber-500",
+  red: "border-l-red-600 dark:border-l-red-500",
+  grey: "border-l-border",
+} as const;
+
 export function SubjectCard({ subject }: { subject: Subject }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [state, formAction, isPending] = useActionState(renameSubjectAction, undefined);
   const { showToast } = useToast();
+  const countdown = useCountdown(subject.examDate);
+  const accentClass = ACCENT_BORDER_CLASSES[countdown?.urgency ?? "grey"];
 
   // showToast reaches into ToastProvider's state — a different component —
   // so it must run in an effect, not during render (unlike setIsEditing,
@@ -110,26 +120,36 @@ export function SubjectCard({ subject }: { subject: Subject }) {
   }
 
   return (
-    <li className="border-border flex flex-col gap-3 rounded-lg border p-4">
+    <li
+      className={`group border-border bg-background flex flex-col gap-3 rounded-lg border border-l-4 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${accentClass}`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
             href={`/subjects/${subject.id}`}
-            className="font-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="group/link inline-flex items-center gap-1 rounded-md text-base font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            {subject.name}
+            <span className="group-hover/link:text-primary transition-colors group-hover/link:underline">
+              {subject.name}
+            </span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="text-muted-foreground h-4 w-4 shrink-0 transition-transform duration-200 group-hover/link:translate-x-0.5"
+            >
+              <path d="M9 6l6 6-6 6" />
+            </svg>
           </Link>
           <p className="text-muted-foreground text-sm">
             {subject.examDate ? `Exam: ${formatDate(subject.examDate)}` : "No exam date set"}
           </p>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <Link
-            href={`/subjects/${subject.id}`}
-            className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
-            Topics
-          </Link>
+        <div className="flex shrink-0 items-center gap-1.5">
           <button
             type="button"
             onClick={() => setIsEditing(true)}
@@ -140,9 +160,21 @@ export function SubjectCard({ subject }: { subject: Subject }) {
           <button
             type="button"
             onClick={() => setIsConfirmingDelete(true)}
-            className="rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
+            aria-label={`Delete "${subject.name}"`}
+            className="rounded-md border border-red-300 p-2 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
           >
-            Delete
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="h-4 w-4"
+            >
+              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z" />
+            </svg>
           </button>
         </div>
       </div>

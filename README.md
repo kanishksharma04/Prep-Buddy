@@ -216,6 +216,15 @@ Implementation notes for anyone extending this project.
 - Automated a11y audit (axe-core) across every page in both themes — 0 violations. Verified real keyboard interaction too: dialog opens on Enter, Escape closes it, Tab cycles between its two buttons only.
 - Mobile: audited every page at 375px for horizontal overflow — none found; fixed the header logo wrapping to two lines under pressure.
 
+### Visual design & interactions
+
+- Landing page ([src/app/page.tsx](./src/app/page.tsx)): ambient blurred glow behind the logo, three feature-highlight cards with icons, and a consistent hover language for every button/card (`hover:-translate-y-0.5/-1` + `hover:shadow-lg/md`, colored via `shadow-primary/30` so the shadow tints toward the brand color instead of plain grey).
+- Dashboard cards ([subject-card.tsx](./src/components/subjects/subject-card.tsx)): the whole card lifts + gains a shadow on hover; the left border is colored by the same urgency the countdown text already conveys (green/amber/red/grey, from a new shared [use-countdown.ts](./src/lib/use-countdown.ts) hook so the border and the countdown label tick off the same clock) — color reinforces, never replaces, the text. The subject-name link's chevron nudges right on hover; delete is now an icon-only trash button (kept an `aria-label` for accessibility) instead of a text button, to reduce visual noise.
+- Progress bar ([progress-bar.tsx](./src/components/subjects/progress-bar.tsx)): the filled portion has a soft colored glow (`shadow-[0_0_8px_var(--tw-shadow-color)]` tinted via `shadow-primary/40`) and animates its width over 300ms instead of jumping.
+- Summary strip ([summary-strip.tsx](./src/components/subjects/summary-strip.tsx)): each stat now has an icon in a tinted circular badge that scales up slightly on hover, with a divider between stats on larger screens instead of a plain grid.
+- View toggle and "Add subject" button both picked up matching hover treatment (smoother tab color transition; lift + colored shadow on the submit button) so the whole dashboard reads as one consistent interaction language rather than a patchwork of components.
+- Verified by hovering every element above in a real browser (Playwright, against a scratch user + real Neon data, both themes) and reading `getComputedStyle` before/after — not just comparing screenshots, since a shadow/border-color diff is easy to miss by eye. One methodology gotcha: `page.emulateMedia({ colorScheme })` does nothing here, since the theme toggle is a manual `classList` + `localStorage` switch, not a `prefers-color-scheme` listener — dark mode has to be tested by actually clicking the toggle.
+
 ### Production readiness
 
 - Meta tags: [src/app/layout.tsx](./src/app/layout.tsx) — `metadataBase`, title template, description, Open Graph + Twitter card tags, per-theme `theme-color`. `robots: { index: false, follow: false }` since this is a personal planner, not a marketing site.
