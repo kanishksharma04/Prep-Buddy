@@ -25,13 +25,24 @@ const ACCENT_BORDER_CLASSES = {
   grey: "border-l-border",
 } as const;
 
+// Hover shadow tints toward the same urgency color as the accent border, so
+// the "glow" reinforces the signal instead of just being a generic grey lift.
+const ACCENT_GLOW_CLASSES = {
+  green: "hover:shadow-green-500/15",
+  amber: "hover:shadow-amber-500/15",
+  red: "hover:shadow-red-500/20",
+  grey: "hover:shadow-black/5 dark:hover:shadow-white/10",
+} as const;
+
 export function SubjectCard({ subject }: { subject: Subject }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [state, formAction, isPending] = useActionState(renameSubjectAction, undefined);
   const { showToast } = useToast();
   const countdown = useCountdown(subject.examDate);
-  const accentClass = ACCENT_BORDER_CLASSES[countdown?.urgency ?? "grey"];
+  const urgency = countdown?.urgency ?? "grey";
+  const accentClass = ACCENT_BORDER_CLASSES[urgency];
+  const glowClass = ACCENT_GLOW_CLASSES[urgency];
 
   // showToast reaches into ToastProvider's state — a different component —
   // so it must run in an effect, not during render (unlike setIsEditing,
@@ -63,7 +74,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
 
   if (isEditing) {
     return (
-      <li className="border-border rounded-lg border p-4">
+      <li className="border-border/60 bg-surface/60 rounded-2xl border p-5 backdrop-blur-sm">
         <form action={formAction} className="space-y-3">
           <input type="hidden" name="id" value={subject.id} />
           <div className="space-y-1.5">
@@ -76,7 +87,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
               defaultValue={subject.name}
               required
               maxLength={100}
-              className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control bg-background/80 w-full rounded-xl border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>
           <div className="space-y-1.5">
@@ -88,7 +99,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
               name="examDate"
               type="date"
               defaultValue={toDateInputValue(subject.examDate)}
-              className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control bg-background/80 w-full rounded-xl border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>
 
@@ -102,14 +113,14 @@ export function SubjectCard({ subject }: { subject: Subject }) {
             <button
               type="submit"
               disabled={isPending}
-              className="bg-primary text-primary-foreground rounded-md px-3 py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="from-primary to-accent text-primary-foreground rounded-xl bg-linear-to-r px-4 py-2 text-sm font-semibold shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               {isPending ? "Saving…" : "Save"}
             </button>
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control rounded-xl border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Cancel
             </button>
@@ -121,7 +132,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
 
   return (
     <li
-      className={`group border-border bg-background flex flex-col gap-3 rounded-lg border border-l-4 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${accentClass}`}
+      className={`group border-border/60 bg-surface/60 relative flex flex-col gap-3 rounded-2xl border border-l-4 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${accentClass} ${glowClass}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -153,7 +164,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="border-control rounded-xl border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             Rename
           </button>
@@ -161,7 +172,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
             type="button"
             onClick={() => setIsConfirmingDelete(true)}
             aria-label={`Delete "${subject.name}"`}
-            className="rounded-md border border-red-300 p-2 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
+            className="rounded-xl border border-red-300 p-2 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
           >
             <svg
               viewBox="0 0 24 24"

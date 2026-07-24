@@ -18,7 +18,7 @@ export function ProgressBar({ total, done }: { total: number; done: number }) {
         className="bg-surface border-border h-2.5 overflow-hidden rounded-full border"
       >
         <div
-          className="bg-primary shadow-primary/40 h-full rounded-full shadow-[0_0_8px_var(--tw-shadow-color)] transition-[width] duration-300 ease-out"
+          className="from-primary to-accent shadow-primary/40 h-full rounded-full bg-linear-to-r shadow-[0_0_8px_var(--tw-shadow-color)] transition-[width] duration-300 ease-out"
           style={{ width: `${percent}%` }}
         />
       </div>

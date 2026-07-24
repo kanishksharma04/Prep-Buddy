@@ -55,10 +55,26 @@ export default async function DashboardPage() {
 
   const listView =
     subjects.length === 0 ? (
-      <p className="text-muted-foreground border-border rounded-lg border border-dashed p-6 text-center text-sm">
-        No subjects yet — add your first one above to start tracking its
-        syllabus.
-      </p>
+      <div className="border-border/60 flex flex-col items-center gap-3 rounded-2xl border border-dashed p-10 text-center">
+        <div className="from-primary/15 to-accent/10 text-primary flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="h-6 w-6"
+          >
+            <rect x="3" y="4" width="18" height="17" rx="2" />
+            <path d="M9 11l2 2 4-4M9 17l2 2 4-4" />
+          </svg>
+        </div>
+        <p className="text-muted-foreground max-w-xs text-sm">
+          No subjects yet — add your first one above to start tracking its syllabus.
+        </p>
+      </div>
     ) : (
       <ul className="flex flex-col gap-3">
         {subjects.map((subject) => (
@@ -74,11 +90,11 @@ export default async function DashboardPage() {
   return (
     <main
       id="main-content"
-      className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-16"
+      className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-16"
     >
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
           Signed in as {user.email}
         </p>
       </div>

@@ -48,7 +48,7 @@ export function ConfirmDialog({
           onOpenChange(false);
         }
       }}
-      className="bg-background text-foreground border-control m-auto w-full max-w-sm rounded-lg border p-0 backdrop:bg-black/50"
+      className="bg-background text-foreground border-control m-auto w-full max-w-sm rounded-2xl border p-0 shadow-2xl backdrop:bg-black/50"
     >
       <div className="p-5">
         <h2 className="text-lg font-semibold">{title}</h2>
@@ -57,7 +57,7 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="border-control rounded-xl border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             {cancelLabel}
           </button>
@@ -69,8 +69,8 @@ export function ConfirmDialog({
             }}
             className={
               isDangerous
-                ? "rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                : "bg-primary text-primary-foreground rounded-md px-3 py-2 text-sm font-medium transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                ? "rounded-xl bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                : "from-primary to-accent text-primary-foreground rounded-xl bg-linear-to-r px-3 py-2 text-sm font-medium transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             }
           >
             {confirmLabel}

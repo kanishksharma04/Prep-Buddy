@@ -12,7 +12,9 @@
   --muted-foreground: #6b7280;
   --primary: #2563eb;
   --primary-foreground: #ffffff;
+  --accent: #7c3aed;
   --ring: #2563eb;
+  --ambient-strength: 5%;
 }
 
 .dark {
@@ -23,7 +25,9 @@
   --muted-foreground: #9ca3af;
   --primary: #3b82f6;
   --primary-foreground: #0a0a0a;
+  --accent: #a78bfa;
   --ring: #3b82f6;
+  --ambient-strength: 16%;
 }
 
 @theme inline {
@@ -34,6 +38,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
   --color-ring: var(--ring);
   /* Stronger border for interactive controls (inputs, outline buttons) —
      `--border` alone is ~1.3:1 against the background, well under WCAG
@@ -49,4 +54,30 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  position: relative;
+}
+
+/* App-wide ambient backdrop: two soft brand-color blobs pinned to the
+   viewport corners, behind everything. `--ambient-strength` (not a fixed
+   opacity) is what changes between themes, since the same tint reads as a
+   light wash on white but needs to be much stronger to register at all
+   against near-black. Purely decorative — no interaction, never intercepts
+   clicks. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 900px 560px at 15% -10%,
+      color-mix(in oklab, var(--primary) var(--ambient-strength), transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 700px 520px at 110% 10%,
+      color-mix(in oklab, var(--accent) var(--ambient-strength), transparent),
+      transparent 60%
+    );
 }

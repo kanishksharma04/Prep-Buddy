@@ -12,7 +12,7 @@ export async function Header() {
   const isLoggedIn = !!session?.user;
 
   return (
-    <header className="border-border bg-background sticky top-0 z-10 border-b">
+    <header className="border-border/60 bg-background/70 sticky top-0 z-20 border-b backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
         <Logo />
         <nav aria-label="Main" className="flex items-center gap-2 sm:gap-3">

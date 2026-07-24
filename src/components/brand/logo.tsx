@@ -10,7 +10,9 @@ export function Logo() {
       <LogoMark className="h-8 w-8 shrink-0 dark:drop-shadow-[0_0_6px_rgba(59,130,246,0.5)]" />
       <span className="text-lg font-semibold tracking-tight whitespace-nowrap">
         <span className="text-foreground">Prep</span>{" "}
-        <span className="text-primary">Buddy</span>
+        <span className="from-primary to-accent bg-linear-to-r bg-clip-text text-transparent">
+          Buddy
+        </span>
       </span>
     </Link>
   );
