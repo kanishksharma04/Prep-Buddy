@@ -78,16 +78,16 @@ export function DayDetailDialog({
           onClose();
         }
       }}
-      className="bg-background text-foreground border-border m-auto w-full max-w-md rounded-lg border p-0 backdrop:bg-black/50"
+      className="bg-surface text-foreground border-border m-auto w-full max-w-md rounded-lg border p-0 shadow-[6px_6px_0_0_var(--paper-shadow)] backdrop:bg-black/50"
     >
       <div className="max-h-[80vh] overflow-y-auto p-5">
         <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 className="text-lg font-semibold">{label}</h2>
+          <h2 className="font-serif text-lg font-semibold tracking-tight">{label}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-md p-1 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="rounded-md p-1 transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             ✕
           </button>
@@ -102,7 +102,7 @@ export function DayDetailDialog({
               <Link
                 key={exam.subjectId}
                 href={`/subjects/${exam.subjectId}`}
-                className="block rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:bg-red-700"
+                className="block rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:bg-red-700"
               >
                 Exam: {exam.subjectName}
               </Link>
@@ -121,7 +121,7 @@ export function DayDetailDialog({
               {classEvents.map((event) => (
                 <li
                   key={event.id}
-                  className="border-border flex items-center justify-between gap-2 rounded-md border p-2"
+                  className="border-border bg-background flex items-center justify-between gap-2 rounded-md border p-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{event.title}</p>
@@ -148,7 +148,7 @@ export function DayDetailDialog({
                     type="button"
                     onClick={() => handleDelete(event.id, event.title)}
                     aria-label={`Remove "${event.title}"`}
-                    className="shrink-0 rounded-md px-2 py-1 text-xs text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
+                    className="shrink-0 rounded-md px-2 py-1 text-xs text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
                   >
                     Remove
                   </button>
@@ -160,7 +160,7 @@ export function DayDetailDialog({
 
         <form ref={formRef} action={formAction} className="border-border space-y-3 border-t pt-4">
           <input type="hidden" name="startDate" value={dayKey} />
-          <h3 className="text-sm font-medium">Add a class</h3>
+          <h3 className="font-serif text-sm font-semibold">Add a class</h3>
           <div className="space-y-1.5">
             <label htmlFor="class-title" className="text-xs font-medium">
               Title
@@ -171,7 +171,7 @@ export function DayDetailDialog({
               required
               maxLength={100}
               placeholder="e.g. Chemistry lecture"
-              className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>
           <div className="space-y-1.5">
@@ -183,7 +183,7 @@ export function DayDetailDialog({
               name="endDate"
               type="date"
               min={dayKey}
-              className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>
           <div className="space-y-1.5">
@@ -195,7 +195,7 @@ export function DayDetailDialog({
               name="link"
               type="url"
               placeholder="https://..."
-              className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>
           {subjects.length > 0 ? (
@@ -207,7 +207,7 @@ export function DayDetailDialog({
                 id="class-subject"
                 name="subjectId"
                 defaultValue=""
-                className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <option value="">None</option>
                 {subjects.map((subject) => (
@@ -230,7 +230,7 @@ export function DayDetailDialog({
           <button
             type="submit"
             disabled={isPending}
-            className="bg-primary text-primary-foreground w-full rounded-md px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="bg-primary text-primary-foreground w-full rounded-md px-4 py-2.5 text-sm font-semibold shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
           >
             {isPending ? "Adding…" : "Add class"}
           </button>

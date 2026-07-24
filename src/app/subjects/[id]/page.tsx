@@ -42,10 +42,10 @@ export default async function SubjectPage({
         >
           ← Dashboard
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight">{subject.name}</h1>
+        <h1 className="font-serif text-3xl font-semibold tracking-tight">{subject.name}</h1>
       </div>
 
-      <div className="border-border/60 bg-surface/60 flex flex-col gap-4 rounded-2xl border p-5 backdrop-blur-sm sm:flex-row sm:items-end sm:justify-between">
+      <div className="border-border bg-surface flex flex-col gap-4 rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)] sm:flex-row sm:items-end sm:justify-between">
         <ExamDatePicker subjectId={subject.id} examDate={subject.examDate} />
         <Countdown examDate={subject.examDate} />
       </div>
@@ -57,7 +57,7 @@ export default async function SubjectPage({
       <AddTopicsForm subjectId={subject.id} />
 
       {subject.topics.length === 0 ? (
-        <p className="text-muted-foreground border-border/60 rounded-2xl border border-dashed p-8 text-center text-sm">
+        <p className="text-muted-foreground border-border rounded-lg border border-dashed p-8 text-center text-sm">
           No topics yet — paste your syllabus above, one topic per line.
         </p>
       ) : (

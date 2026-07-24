@@ -108,24 +108,24 @@ export function CalendarView({
   return (
     <div className="flex flex-col gap-4">
       <BulkClassLinksForm subjects={subjects} />
-      <div className="border-border rounded-lg border p-4">
+      <div className="border-border bg-surface rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)]">
         <div className="mb-4 flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => goToMonth(-1)}
             aria-label="Previous month"
-            className="rounded-md p-2 text-sm hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="rounded-md p-2 text-sm transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             ←
           </button>
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold">
+            <h2 className="font-serif text-base font-semibold tracking-tight">
               {MONTH_NAMES[cursor.month]} {cursor.year}
             </h2>
             <button
               type="button"
               onClick={goToToday}
-              className="border-control rounded-md border px-2 py-1 text-xs font-medium hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="bg-primary text-primary-foreground rounded px-2.5 py-1 text-xs font-semibold shadow-[2px_2px_0_0_var(--paper-shadow)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Today
             </button>
@@ -134,13 +134,13 @@ export function CalendarView({
             type="button"
             onClick={() => goToMonth(1)}
             aria-label="Next month"
-            className="rounded-md p-2 text-sm hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="rounded-md p-2 text-sm transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             →
           </button>
         </div>
 
-        <div className="text-muted-foreground mb-1 grid grid-cols-7 gap-1 text-center text-xs">
+        <div className="text-muted-foreground mb-1 grid grid-cols-7 gap-1 text-center text-xs font-medium tracking-wide uppercase">
           {WEEKDAY_LABELS.map((label) => (
             <div key={label}>{label}</div>
           ))}
@@ -160,17 +160,23 @@ export function CalendarView({
                 type="button"
                 onClick={() => setSelectedKey(key)}
                 aria-label={`${MONTH_NAMES[cell.month]} ${cell.day}, ${cell.year}${hasContent ? `, ${totalEvents} event${totalEvents === 1 ? "" : "s"}` : ""}`}
-                className={`flex min-h-16 flex-col items-start gap-0.5 rounded-md border p-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-h-20 ${
+                className={`flex min-h-16 flex-col items-start gap-0.5 rounded-md border p-1.5 text-left transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-h-20 ${
                   cell.isCurrentMonth ? "border-border" : "border-transparent opacity-40"
-                } ${cell.isToday ? "border-primary" : "hover:bg-surface"}`}
+                } ${cell.isToday ? "border-primary/70 ring-primary/25 ring-2" : "hover:border-primary/40 hover:bg-background"}`}
               >
-                <span className={`text-xs font-medium ${cell.isToday ? "text-primary" : ""}`}>
+                <span
+                  className={`text-xs font-semibold ${
+                    cell.isToday
+                      ? "bg-primary text-primary-foreground flex h-5 w-5 items-center justify-center rounded-full"
+                      : ""
+                  }`}
+                >
                   {cell.day}
                 </span>
                 {dayExams.slice(0, 1).map((exam) => (
                   <span
                     key={exam.subjectId}
-                    className="w-full truncate rounded bg-red-600 px-1 py-0.5 text-[10px] font-medium text-white dark:bg-red-700"
+                    className="w-full truncate rounded-sm bg-red-600 px-1.5 py-0.5 text-[10px] font-medium text-white dark:bg-red-700"
                   >
                     {exam.subjectName}
                   </span>
@@ -178,7 +184,7 @@ export function CalendarView({
                 {dayClasses.slice(0, dayExams.length > 0 ? 1 : 2).map((event) => (
                   <span
                     key={event.id}
-                    className="bg-primary text-primary-foreground w-full truncate rounded px-1 py-0.5 text-[10px] font-medium"
+                    className="bg-primary text-primary-foreground w-full truncate rounded-sm px-1.5 py-0.5 text-[10px] font-medium"
                   >
                     {event.title}
                   </span>

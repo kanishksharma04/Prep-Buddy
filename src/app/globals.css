@@ -4,30 +4,36 @@
    not by prefers-color-scheme alone — this lets a manual choice persist. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* "Study desk" palette: warm paper tones instead of the generic blue/violet
+   SaaS look. Light = index card on a wood desk. Dark = the same desk under
+   a study lamp at night — warm espresso browns with an amber glow, not the
+   usual near-black-with-neon-accent dark theme. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --surface: #f7f7f8;
-  --border: #e5e5e7;
-  --muted-foreground: #6b7280;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --accent: #7c3aed;
-  --ring: #2563eb;
-  --ambient-strength: 5%;
+  --background: #ede2c9;
+  --foreground: #2b2318;
+  --surface: #fbf6ea;
+  --border: #d9c9a3;
+  --muted-foreground: #6b5d42;
+  --primary: #bc4a26;
+  --primary-foreground: #fdf8ec;
+  --accent: #a6740f;
+  --ring: #bc4a26;
+  --paper-shadow: rgba(43, 35, 24, 0.22);
+  --grain-opacity: 0.05;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --surface: #161618;
-  --border: #2a2a2e;
-  --muted-foreground: #9ca3af;
-  --primary: #3b82f6;
-  --primary-foreground: #0a0a0a;
-  --accent: #a78bfa;
-  --ring: #3b82f6;
-  --ambient-strength: 16%;
+  --background: #1a1510;
+  --foreground: #ede3cc;
+  --surface: #241d15;
+  --border: #3d3323;
+  --muted-foreground: #ab9a78;
+  --primary: #e2793f;
+  --primary-foreground: #1a1208;
+  --accent: #e8b13a;
+  --ring: #e2793f;
+  --paper-shadow: rgba(0, 0, 0, 0.55);
+  --grain-opacity: 0.07;
 }
 
 @theme inline {
@@ -41,12 +47,13 @@
   --color-accent: var(--accent);
   --color-ring: var(--ring);
   /* Stronger border for interactive controls (inputs, outline buttons) —
-     `--border` alone is ~1.3:1 against the background, well under WCAG
+     `--border` alone is too subtle against the background, well under WCAG
      1.4.11's 3:1 minimum for UI-component boundaries. Reuses
      --muted-foreground, which already clears 3:1 in both themes. Plain
      decorative dividers (cards, empty states) keep using `border-border`. */
   --color-control: var(--muted-foreground);
   --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-fraunces);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -57,27 +64,36 @@ body {
   position: relative;
 }
 
-/* App-wide ambient backdrop: two soft brand-color blobs pinned to the
-   viewport corners, behind everything. `--ambient-strength` (not a fixed
-   opacity) is what changes between themes, since the same tint reads as a
-   light wash on white but needs to be much stronger to register at all
-   against near-black. Purely decorative — no interaction, never intercepts
-   clicks. */
+@keyframes shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Paper grain: a tiled SVG noise filter, not a color gradient — this is what
+   stands in for the old ambient blue/violet glow. Fixed + behind everything,
+   pure texture so it reads as paper rather than "AI SaaS blob." */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(
-      ellipse 900px 560px at 15% -10%,
-      color-mix(in oklab, var(--primary) var(--ambient-strength), transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 700px 520px at 110% 10%,
-      color-mix(in oklab, var(--accent) var(--ambient-strength), transparent),
-      transparent 60%
-    );
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }

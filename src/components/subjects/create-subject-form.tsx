@@ -20,7 +20,7 @@ export function CreateSubjectForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="border-border/60 bg-surface/60 flex flex-col gap-3 rounded-2xl border p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 sm:flex-row sm:items-end"
+      className="border-border bg-surface flex flex-col gap-3 rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)] sm:flex-row sm:items-end"
     >
       <div className="flex-1 space-y-1.5">
         <label htmlFor="new-subject-name" className="text-sm font-medium">
@@ -32,7 +32,7 @@ export function CreateSubjectForm() {
           required
           maxLength={100}
           placeholder="e.g. Organic Chemistry"
-          className="border-control bg-background/80 w-full rounded-xl border px-3.5 py-2.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
       </div>
 
@@ -44,14 +44,14 @@ export function CreateSubjectForm() {
           id="new-subject-exam-date"
           name="examDate"
           type="date"
-          className="border-control bg-background/80 w-full rounded-xl border px-3.5 py-2.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
       </div>
 
       <button
         type="submit"
         disabled={isPending}
-        className="from-primary to-accent text-primary-foreground hover:shadow-primary/40 shrink-0 rounded-xl bg-linear-to-r px-5 py-2.5 text-sm font-semibold shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="bg-primary text-primary-foreground shrink-0 rounded-md px-5 py-2.5 text-sm font-semibold shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
       >
         {isPending ? "Adding…" : "+ Add subject"}
       </button>

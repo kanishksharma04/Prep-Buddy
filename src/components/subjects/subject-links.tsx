@@ -32,8 +32,8 @@ export function SubjectLinks({
   }
 
   return (
-    <div className="border-border rounded-lg border p-4">
-      <h2 className="text-sm font-medium">Important links</h2>
+    <div className="border-border bg-surface rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)]">
+      <h2 className="font-serif text-base font-semibold">Important links</h2>
       <p className="text-muted-foreground text-xs">
         Notes, resources, or references for this subject — a syllabus PDF, a shared doc, anything
         worth keeping handy.
@@ -46,7 +46,7 @@ export function SubjectLinks({
           {links.map((link) => (
             <li
               key={link.id}
-              className="border-border flex items-center justify-between gap-2 rounded-md border p-2"
+              className="border-border bg-background flex items-center justify-between gap-2 rounded-md border p-2.5 transition-colors hover:border-primary/40"
             >
               <a
                 href={link.url}
@@ -60,7 +60,7 @@ export function SubjectLinks({
                 type="button"
                 onClick={() => handleDelete(link.id, link.title)}
                 aria-label={`Remove "${link.title}"`}
-                className="shrink-0 rounded-md px-2 py-1 text-xs text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
+                className="shrink-0 rounded-lg px-2 py-1 text-xs text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
               >
                 Remove
               </button>
@@ -85,7 +85,7 @@ export function SubjectLinks({
             required
             maxLength={100}
             placeholder="e.g. Syllabus PDF"
-            className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           />
         </div>
         <div className="flex-1 space-y-1.5">
@@ -98,13 +98,13 @@ export function SubjectLinks({
             type="url"
             required
             placeholder="https://..."
-            className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           />
         </div>
         <button
           type="submit"
           disabled={isPending}
-          className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="bg-primary text-primary-foreground rounded-md px-4 py-2.5 text-sm font-semibold shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
         >
           {isPending ? "Adding…" : "Add link"}
         </button>

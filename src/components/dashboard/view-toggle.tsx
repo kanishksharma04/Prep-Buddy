@@ -35,11 +35,11 @@ export function ViewToggle({
       <div
         role="tablist"
         aria-label="Dashboard view"
-        className="border-control relative inline-flex rounded-full border p-1"
+        className="border-control bg-surface relative inline-flex rounded-md border p-1"
       >
         <span
           aria-hidden="true"
-          className="from-primary to-accent absolute top-1 bottom-1 rounded-full bg-linear-to-r shadow-sm transition-all duration-300 ease-out"
+          className="bg-primary absolute top-1 bottom-1 rounded transition-all duration-300 ease-out"
           style={{ left: indicator.left, width: indicator.width }}
         />
         <button
@@ -48,7 +48,7 @@ export function ViewToggle({
           role="tab"
           aria-selected={view === "list"}
           onClick={() => setView("list")}
-          className={`relative z-10 rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+          className={`relative z-10 rounded px-4 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
             view === "list" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -60,7 +60,7 @@ export function ViewToggle({
           role="tab"
           aria-selected={view === "calendar"}
           onClick={() => setView("calendar")}
-          className={`relative z-10 rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+          className={`relative z-10 rounded px-4 py-1.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
             view === "calendar" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
         >

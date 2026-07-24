@@ -70,10 +70,10 @@ export function BulkClassLinksForm({ subjects }: { subjects: Subject[] }) {
     <form
       ref={formRef}
       action={formAction}
-      className="border-border flex flex-col gap-3 rounded-lg border p-4"
+      className="border-border bg-surface flex flex-col gap-3 rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)]"
     >
       <div>
-        <h3 className="text-sm font-medium">Add class dates &amp; join links</h3>
+        <h3 className="font-serif text-base font-semibold">Add class dates &amp; join links</h3>
         <p className="text-muted-foreground text-xs">
           Add a row per subject that has online classes, pick a date range and paste the join
           link, then save them all at once.
@@ -89,14 +89,14 @@ export function BulkClassLinksForm({ subjects }: { subjects: Subject[] }) {
           {rows.map((row) => (
             <div
               key={row.key}
-              className="border-border flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center"
+              className="border-border bg-background flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center"
             >
               <select
                 aria-label="Subject"
                 value={row.subjectId}
                 onChange={(event) => updateRowSubject(row.key, event.target.value)}
                 name="subjectId[]"
-                className="border-control bg-background rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:w-40 sm:shrink-0"
+                className="border-control bg-background rounded-md border px-3 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:w-40 sm:shrink-0"
               >
                 {subjects.map((subject) => (
                   <option key={subject.id} value={subject.id}>
@@ -108,26 +108,26 @@ export function BulkClassLinksForm({ subjects }: { subjects: Subject[] }) {
                 type="date"
                 name="startDate[]"
                 aria-label="Start date"
-                className="border-control bg-background rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:w-40"
+                className="border-control bg-background rounded-md border px-3 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:w-40"
               />
               <input
                 type="date"
                 name="endDate[]"
                 aria-label="End date (optional — defaults to start date)"
-                className="border-control bg-background rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:w-40"
+                className="border-control bg-background rounded-md border px-3 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:w-40"
               />
               <input
                 type="url"
                 name="link[]"
                 placeholder="Join class link (optional)"
                 aria-label="Join class link"
-                className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="border-control bg-background w-full rounded-md border px-3 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               />
               <button
                 type="button"
                 onClick={() => removeRow(row.key)}
                 aria-label="Remove row"
-                className="shrink-0 rounded-md px-2 py-1 text-xs text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
+                className="shrink-0 rounded-md px-2 py-1 text-xs text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
               >
                 Remove
               </button>
@@ -140,7 +140,7 @@ export function BulkClassLinksForm({ subjects }: { subjects: Subject[] }) {
         <button
           type="button"
           onClick={addRow}
-          className="border-control rounded-md border px-3 py-2 text-sm font-medium hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           + Add subject
         </button>
@@ -148,7 +148,7 @@ export function BulkClassLinksForm({ subjects }: { subjects: Subject[] }) {
           <button
             type="submit"
             disabled={isPending}
-            className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="bg-primary text-primary-foreground rounded-md px-4 py-2.5 text-sm font-semibold shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
           >
             {isPending ? "Saving…" : "Save all"}
           </button>

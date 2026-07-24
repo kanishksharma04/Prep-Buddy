@@ -48,16 +48,16 @@ export function ConfirmDialog({
           onOpenChange(false);
         }
       }}
-      className="bg-background text-foreground border-control m-auto w-full max-w-sm rounded-2xl border p-0 shadow-2xl backdrop:bg-black/50"
+      className="bg-surface text-foreground border-border m-auto w-full max-w-sm rounded-lg border p-0 shadow-[6px_6px_0_0_var(--paper-shadow)] backdrop:bg-black/50"
     >
       <div className="p-5">
-        <h2 className="text-lg font-semibold">{title}</h2>
+        <h2 className="font-serif text-lg font-semibold">{title}</h2>
         <p className="text-muted-foreground mt-2 text-sm">{description}</p>
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="border-control rounded-xl border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             {cancelLabel}
           </button>
@@ -69,8 +69,8 @@ export function ConfirmDialog({
             }}
             className={
               isDangerous
-                ? "rounded-xl bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                : "from-primary to-accent text-primary-foreground rounded-xl bg-linear-to-r px-3 py-2 text-sm font-medium transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                ? "rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:bg-red-700 hover:shadow-[2px_2px_0_0_var(--paper-shadow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
+                : "bg-primary text-primary-foreground rounded-md px-3 py-2 text-sm font-medium shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
             }
           >
             {confirmLabel}

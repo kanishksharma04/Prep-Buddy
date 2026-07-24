@@ -28,7 +28,7 @@ export function MouseGlow() {
     <div
       ref={ref}
       aria-hidden="true"
-      className="bg-primary/20 dark:bg-primary/25 pointer-events-none absolute top-1/4 left-1/2 h-128 w-lg -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-all duration-300 ease-out"
+      className="bg-accent/15 dark:bg-accent/20 pointer-events-none absolute top-1/4 left-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl transition-all duration-300 ease-out"
     />
   );
 }

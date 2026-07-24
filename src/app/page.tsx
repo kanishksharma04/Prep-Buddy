@@ -75,10 +75,10 @@ export default async function Home() {
       <MouseGlow />
 
       <div className="relative flex flex-col items-center gap-5">
-        <LogoMark className="h-16 w-16 dark:drop-shadow-[0_0_20px_rgba(59,130,246,0.55)]" />
+        <LogoMark className="h-16 w-16 dark:drop-shadow-[0_0_18px_rgba(232,177,58,0.4)]" />
 
         <div className="space-y-3">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
+          <h1 className="font-serif text-4xl font-semibold tracking-tight italic sm:text-6xl">
             Prep Buddy
           </h1>
           <p className="text-muted-foreground mx-auto max-w-md text-balance sm:text-lg">
@@ -91,7 +91,7 @@ export default async function Home() {
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="bg-primary text-primary-foreground hover:shadow-primary/30 rounded-md px-5 py-2.5 text-sm font-medium shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="bg-primary text-primary-foreground rounded-md px-5 py-2.5 text-sm font-semibold shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
             >
               Go to dashboard
             </Link>
@@ -99,13 +99,13 @@ export default async function Home() {
             <>
               <Link
                 href="/signup"
-                className="bg-primary text-primary-foreground hover:shadow-primary/30 rounded-md px-5 py-2.5 text-sm font-medium shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="bg-primary text-primary-foreground rounded-md px-5 py-2.5 text-sm font-semibold shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
               >
                 Get started
               </Link>
               <Link
                 href="/login"
-                className="border-control rounded-md border px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="border-control bg-surface rounded-md border px-5 py-2.5 text-sm font-semibold shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
               >
                 Log in
               </Link>
@@ -114,14 +114,17 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="relative grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
-        {features.map((feature) => (
+      <div className="relative grid w-full max-w-3xl grid-cols-1 gap-5 sm:grid-cols-3">
+        {features.map((feature, i) => (
           <div
             key={feature.title}
-            className="border-border hover:border-primary rounded-lg border p-5 text-left transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+            style={{ rotate: i % 2 === 0 ? "-0.6deg" : "0.6deg" }}
+            className="border-border bg-surface hover:border-primary/50 rounded-lg border p-5 text-left shadow-[4px_4px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-1 hover:rotate-0 hover:shadow-[6px_6px_0_0_var(--paper-shadow)]"
           >
-            <div className="text-primary mb-3">{feature.icon}</div>
-            <h2 className="text-sm font-semibold">{feature.title}</h2>
+            <div className="bg-primary/10 text-primary mb-3 flex h-10 w-10 items-center justify-center rounded-md">
+              {feature.icon}
+            </div>
+            <h2 className="font-serif text-base font-semibold">{feature.title}</h2>
             <p className="text-muted-foreground mt-1 text-xs">{feature.description}</p>
           </div>
         ))}

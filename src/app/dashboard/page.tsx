@@ -55,8 +55,8 @@ export default async function DashboardPage() {
 
   const listView =
     subjects.length === 0 ? (
-      <div className="border-border/60 flex flex-col items-center gap-3 rounded-2xl border border-dashed p-10 text-center">
-        <div className="from-primary/15 to-accent/10 text-primary flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br">
+      <div className="border-border flex flex-col items-center gap-3 rounded-lg border border-dashed p-10 text-center">
+        <div className="bg-primary/10 text-primary flex h-12 w-12 -rotate-3 items-center justify-center rounded-md">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -76,9 +76,9 @@ export default async function DashboardPage() {
         </p>
       </div>
     ) : (
-      <ul className="flex flex-col gap-3">
-        {subjects.map((subject) => (
-          <SubjectCard key={subject.id} subject={subject} />
+      <ul className="flex flex-col gap-4">
+        {subjects.map((subject, index) => (
+          <SubjectCard key={subject.id} subject={subject} index={index} />
         ))}
       </ul>
     );
@@ -93,7 +93,7 @@ export default async function DashboardPage() {
       className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-16"
     >
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="font-serif text-3xl font-semibold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           Signed in as {user.email}
         </p>

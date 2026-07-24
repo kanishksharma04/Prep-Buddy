@@ -12,7 +12,7 @@ export async function Header() {
   const isLoggedIn = !!session?.user;
 
   return (
-    <header className="border-border/60 bg-background/70 sticky top-0 z-20 border-b backdrop-blur-md">
+    <header className="border-primary/30 bg-background sticky top-0 z-20 border-b-2">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
         <Logo />
         <nav aria-label="Main" className="flex items-center gap-2 sm:gap-3">
@@ -37,7 +37,7 @@ export async function Header() {
               </Link>
               <Link
                 href="/signup"
-                className="bg-primary text-primary-foreground rounded-md px-3 py-2 text-sm font-medium transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="bg-primary text-primary-foreground rounded-md px-3 py-2 text-sm font-semibold shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
               >
                 Sign up
               </Link>

@@ -2,19 +2,18 @@ import { formatDate } from "@/lib/format";
 
 function StatIcon({ children }: { children: React.ReactNode }) {
   return (
-    <div className="from-primary/15 to-accent/10 text-primary relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br transition-transform duration-300 group-hover:scale-110">
+    <div className="bg-primary/10 text-primary relative z-10 flex h-10 w-10 shrink-0 -rotate-3 items-center justify-center rounded-md transition-transform duration-300 group-hover:rotate-0">
       {children}
     </div>
   );
 }
 
-function StatCard({ children }: { children: React.ReactNode }) {
+function StatCard({ index, children }: { index: number; children: React.ReactNode }) {
+  const tilt = index % 2 === 0 ? "rotate-[-0.5deg]" : "rotate-[0.4deg]";
   return (
-    <div className="group border-border/60 bg-surface/60 relative overflow-hidden rounded-2xl border p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10">
-      <div
-        aria-hidden="true"
-        className="bg-primary/10 absolute -top-8 -right-8 h-24 w-24 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
-      />
+    <div
+      className={`group border-border bg-surface relative rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-0.5 hover:rotate-0 hover:shadow-[6px_6px_0_0_var(--paper-shadow)] ${tilt}`}
+    >
       {children}
     </div>
   );
@@ -30,8 +29,8 @@ export function SummaryStrip({
   nextExam: { subjectName: string; examDate: Date } | null;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      <StatCard>
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <StatCard index={0}>
         <StatIcon>
           <svg
             viewBox="0 0 24 24"
@@ -47,12 +46,12 @@ export function SummaryStrip({
           </svg>
         </StatIcon>
         <p className="text-muted-foreground relative z-10 mt-4 text-sm">Total topics</p>
-        <p className="relative z-10 mt-1 text-3xl font-bold tracking-tight tabular-nums">
+        <p className="font-serif relative z-10 mt-1 text-3xl font-semibold tracking-tight tabular-nums">
           {totalTopics}
         </p>
       </StatCard>
 
-      <StatCard>
+      <StatCard index={1}>
         <StatIcon>
           <svg
             viewBox="0 0 24 24"
@@ -69,12 +68,12 @@ export function SummaryStrip({
           </svg>
         </StatIcon>
         <p className="text-muted-foreground relative z-10 mt-4 text-sm">Done</p>
-        <p className="relative z-10 mt-1 text-3xl font-bold tracking-tight tabular-nums">
+        <p className="font-serif relative z-10 mt-1 text-3xl font-semibold tracking-tight tabular-nums">
           {doneTopics}
         </p>
       </StatCard>
 
-      <StatCard>
+      <StatCard index={2}>
         <StatIcon>
           <svg
             viewBox="0 0 24 24"
@@ -91,11 +90,11 @@ export function SummaryStrip({
           </svg>
         </StatIcon>
         <p className="text-muted-foreground relative z-10 mt-4 text-sm">Next exam</p>
-        <p className="relative z-10 mt-1 text-lg font-bold tracking-tight">
+        <p className="font-serif relative z-10 mt-1 text-lg font-semibold tracking-tight">
           {nextExam ? (
             <>
               {nextExam.subjectName}{" "}
-              <span className="text-muted-foreground text-sm font-normal">
+              <span className="text-muted-foreground font-sans text-sm font-normal">
                 {formatDate(nextExam.examDate)}
               </span>
             </>

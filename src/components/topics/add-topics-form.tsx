@@ -20,7 +20,7 @@ export function AddTopicsForm({ subjectId }: { subjectId: string }) {
     <form
       ref={formRef}
       action={formAction}
-      className="border-border flex flex-col gap-3 rounded-lg border p-4"
+      className="border-border bg-surface flex flex-col gap-3 rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)]"
     >
       <input type="hidden" name="subjectId" value={subjectId} />
 
@@ -34,7 +34,7 @@ export function AddTopicsForm({ subjectId }: { subjectId: string }) {
           required
           rows={4}
           placeholder={"One topic per line — paste your whole syllabus at once, or add a single topic.\ne.g.\nIntroduction to Thermodynamics\nFirst Law of Thermodynamics"}
-          className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
       </div>
 
@@ -47,7 +47,7 @@ export function AddTopicsForm({ subjectId }: { subjectId: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="bg-primary text-primary-foreground self-start rounded-md px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="bg-primary text-primary-foreground self-start rounded-md px-5 py-2.5 text-sm font-semibold shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
       >
         {isPending ? "Adding…" : "Add topics"}
       </button>

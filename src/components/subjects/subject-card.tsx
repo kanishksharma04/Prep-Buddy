@@ -18,31 +18,28 @@ type Subject = {
   topicsDone: number;
 };
 
-const ACCENT_BORDER_CLASSES = {
-  green: "border-l-green-600 dark:border-l-green-500",
-  amber: "border-l-amber-600 dark:border-l-amber-500",
-  red: "border-l-red-600 dark:border-l-red-500",
-  grey: "border-l-border",
+// Washi-tape strip pinning each card down — the urgency signal, replacing a
+// plain accent border with something that fits the index-card motif.
+const TAPE_CLASSES = {
+  green: "bg-green-600/60 dark:bg-green-500/50",
+  amber: "bg-amber-500/60 dark:bg-amber-400/50",
+  red: "bg-red-600/60 dark:bg-red-500/50",
+  grey: "bg-muted-foreground/30",
 } as const;
 
-// Hover shadow tints toward the same urgency color as the accent border, so
-// the "glow" reinforces the signal instead of just being a generic grey lift.
-const ACCENT_GLOW_CLASSES = {
-  green: "hover:shadow-green-500/15",
-  amber: "hover:shadow-amber-500/15",
-  red: "hover:shadow-red-500/20",
-  grey: "hover:shadow-black/5 dark:hover:shadow-white/10",
-} as const;
+// Alternating tilt per card, like index cards dropped on a desk rather than
+// perfectly stacked — straightens out on hover.
+const TILT_CLASSES = ["rotate-[-0.6deg]", "rotate-[0.5deg]", "rotate-[-0.4deg]"] as const;
 
-export function SubjectCard({ subject }: { subject: Subject }) {
+export function SubjectCard({ subject, index = 0 }: { subject: Subject; index?: number }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [state, formAction, isPending] = useActionState(renameSubjectAction, undefined);
   const { showToast } = useToast();
   const countdown = useCountdown(subject.examDate);
   const urgency = countdown?.urgency ?? "grey";
-  const accentClass = ACCENT_BORDER_CLASSES[urgency];
-  const glowClass = ACCENT_GLOW_CLASSES[urgency];
+  const tapeClass = TAPE_CLASSES[urgency];
+  const tiltClass = TILT_CLASSES[index % TILT_CLASSES.length];
 
   // showToast reaches into ToastProvider's state — a different component —
   // so it must run in an effect, not during render (unlike setIsEditing,
@@ -74,7 +71,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
 
   if (isEditing) {
     return (
-      <li className="border-border/60 bg-surface/60 rounded-2xl border p-5 backdrop-blur-sm">
+      <li className="border-border bg-surface rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)]">
         <form action={formAction} className="space-y-3">
           <input type="hidden" name="id" value={subject.id} />
           <div className="space-y-1.5">
@@ -87,7 +84,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
               defaultValue={subject.name}
               required
               maxLength={100}
-              className="border-control bg-background/80 w-full rounded-xl border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>
           <div className="space-y-1.5">
@@ -99,7 +96,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
               name="examDate"
               type="date"
               defaultValue={toDateInputValue(subject.examDate)}
-              className="border-control bg-background/80 w-full rounded-xl border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             />
           </div>
 
@@ -113,14 +110,14 @@ export function SubjectCard({ subject }: { subject: Subject }) {
             <button
               type="submit"
               disabled={isPending}
-              className="from-primary to-accent text-primary-foreground rounded-xl bg-linear-to-r px-4 py-2 text-sm font-semibold shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-semibold shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--paper-shadow)] disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:translate-x-0.75 active:translate-y-0.75 active:shadow-none"
             >
               {isPending ? "Saving…" : "Save"}
             </button>
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="border-control rounded-xl border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="border-control rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Cancel
             </button>
@@ -132,8 +129,15 @@ export function SubjectCard({ subject }: { subject: Subject }) {
 
   return (
     <li
-      className={`group border-border/60 bg-surface/60 relative flex flex-col gap-3 rounded-2xl border border-l-4 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${accentClass} ${glowClass}`}
+      style={{ transformOrigin: "center" }}
+      className={`group border-border bg-surface relative flex flex-col gap-3 rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-1 hover:rotate-0 hover:shadow-[6px_6px_0_0_var(--paper-shadow)] ${tiltClass}`}
     >
+      {/* washi tape pinning the card down — colored by exam urgency */}
+      <div
+        aria-hidden="true"
+        className={`absolute -top-2.5 left-8 h-5 w-16 -rotate-3 ${tapeClass} shadow-sm`}
+      />
+
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
@@ -164,7 +168,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="border-control rounded-xl border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             Rename
           </button>
@@ -172,7 +176,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
             type="button"
             onClick={() => setIsConfirmingDelete(true)}
             aria-label={`Delete "${subject.name}"`}
-            className="rounded-xl border border-red-300 p-2 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
+            className="rounded-md border border-red-300 p-2 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
           >
             <svg
               viewBox="0 0 24 24"
