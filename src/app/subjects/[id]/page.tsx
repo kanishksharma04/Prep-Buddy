@@ -7,7 +7,9 @@ import { TopicRow } from "@/components/topics/topic-row";
 import { ExamDatePicker } from "@/components/subjects/exam-date-picker";
 import { Countdown } from "@/components/subjects/countdown";
 import { ProgressBar } from "@/components/subjects/progress-bar";
+import { PaceBadge } from "@/components/subjects/pace-badge";
 import { SubjectLinks } from "@/components/subjects/subject-links";
+import { getPace } from "@/lib/pace";
 
 export default async function SubjectPage({
   params,
@@ -29,6 +31,12 @@ export default async function SubjectPage({
   }
 
   const doneCount = subject.topics.filter((topic) => topic.isDone).length;
+  const pace = getPace({
+    examDate: subject.examDate,
+    createdAt: subject.createdAt,
+    topicsTotal: subject.topics.length,
+    topicsDone: doneCount,
+  });
 
   return (
     <main
@@ -50,7 +58,10 @@ export default async function SubjectPage({
         <Countdown examDate={subject.examDate} />
       </div>
 
-      <ProgressBar total={subject.topics.length} done={doneCount} />
+      <div className="space-y-1.5">
+        <ProgressBar total={subject.topics.length} done={doneCount} />
+        <PaceBadge pace={pace} />
+      </div>
 
       <SubjectLinks subjectId={subject.id} links={subject.links} />
 

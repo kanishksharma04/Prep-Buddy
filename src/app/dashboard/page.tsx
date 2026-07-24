@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
 import { sortByNearestExam, findNextExam } from "@/lib/sort-subjects";
+import { getPace } from "@/lib/pace";
 import { CreateSubjectForm } from "@/components/subjects/create-subject-form";
 import { SubjectCard } from "@/components/subjects/subject-card";
 import { SummaryStrip } from "@/components/subjects/summary-strip";
@@ -9,6 +10,7 @@ import { ViewToggle } from "@/components/dashboard/view-toggle";
 
 export default async function DashboardPage() {
   const user = await requireUser();
+  const now = new Date();
 
   const [subjectsRaw, classEventsRaw] = await Promise.all([
     db.subject.findMany({
@@ -78,7 +80,18 @@ export default async function DashboardPage() {
     ) : (
       <ul className="flex flex-col gap-4">
         {subjects.map((subject, index) => (
-          <SubjectCard key={subject.id} subject={subject} index={index} />
+          <SubjectCard
+            key={subject.id}
+            subject={subject}
+            index={index}
+            pace={getPace({
+              examDate: subject.examDate,
+              createdAt: subject.createdAt,
+              topicsTotal: subject.topicsTotal,
+              topicsDone: subject.topicsDone,
+              now,
+            })}
+          />
         ))}
       </ul>
     );

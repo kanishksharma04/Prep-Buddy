@@ -6,9 +6,11 @@ import { renameSubjectAction, deleteSubjectAction } from "@/lib/actions/subjects
 import { formatDate, toDateInputValue } from "@/lib/format";
 import { Countdown } from "@/components/subjects/countdown";
 import { ProgressBar } from "@/components/subjects/progress-bar";
+import { PaceBadge } from "@/components/subjects/pace-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast-context";
 import { useCountdown } from "@/lib/use-countdown";
+import type { PaceResult } from "@/lib/pace";
 
 type Subject = {
   id: string;
@@ -31,7 +33,15 @@ const TAPE_CLASSES = {
 // perfectly stacked — straightens out on hover.
 const TILT_CLASSES = ["rotate-[-0.6deg]", "rotate-[0.5deg]", "rotate-[-0.4deg]"] as const;
 
-export function SubjectCard({ subject, index = 0 }: { subject: Subject; index?: number }) {
+export function SubjectCard({
+  subject,
+  index = 0,
+  pace = null,
+}: {
+  subject: Subject;
+  index?: number;
+  pace?: PaceResult | null;
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [state, formAction, isPending] = useActionState(renameSubjectAction, undefined);
@@ -195,8 +205,9 @@ export function SubjectCard({ subject, index = 0 }: { subject: Subject; index?: 
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="min-w-48 flex-1">
+        <div className="min-w-48 flex-1 space-y-1.5">
           <ProgressBar total={subject.topicsTotal} done={subject.topicsDone} />
+          <PaceBadge pace={pace} />
         </div>
         <Countdown examDate={subject.examDate} />
       </div>
