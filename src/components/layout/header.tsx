@@ -22,7 +22,10 @@ export async function Header() {
                 Dashboard
               </Link>
               <form action={logoutAction}>
-                <button type="submit" className={`border-control border ${navLinkClasses}`}>
+                <button
+                  type="submit"
+                  className="border-control rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:hover:border-red-900 dark:hover:bg-red-950 dark:hover:text-red-400"
+                >
                   Log out
                 </button>
               </form>
