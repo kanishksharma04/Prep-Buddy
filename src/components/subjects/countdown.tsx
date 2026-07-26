@@ -20,11 +20,21 @@ export function Countdown({ examDate }: { examDate: Date | null }) {
     return <span className="text-muted-foreground text-sm">…</span>;
   }
 
-  const { isPast, days, hours, urgency } = result;
+  const { isPast, days, hours, minutes, totalHours, urgency } = result;
+  // Under 48h out, days/hours is too coarse to feel urgent — switch to
+  // hour/minute granularity and give it a faint pulse to match.
+  const isUrgent = urgency === "red" && !isPast;
 
   return (
-    <span className={`text-sm font-medium ${URGENCY_CLASSES[urgency]}`}>
-      {isPast ? "Exam passed" : `${days > 0 ? `${days}d ` : ""}${hours}h left`}
+    <span
+      className={`text-sm font-medium ${URGENCY_CLASSES[urgency]}`}
+      style={isUrgent ? { animation: "urgent-pulse 1.8s ease-in-out infinite" } : undefined}
+    >
+      {isPast
+        ? "Exam passed"
+        : isUrgent
+          ? `${totalHours}h ${minutes}m left`
+          : `${days > 0 ? `${days}d ` : ""}${hours}h left`}
     </span>
   );
 }

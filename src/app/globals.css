@@ -104,6 +104,19 @@ body {
   }
 }
 
+/* A faint heartbeat for the countdown once an exam is under 48h away —
+   subtler than Tailwind's built-in animate-pulse (which dips to 50%
+   opacity); this stays legible while still reading as "urgent." */
+@keyframes urgent-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
 /* Paper grain: a tiled SVG noise filter, not a color gradient — this is what
    stands in for the old ambient blue/violet glow. Fixed + behind everything,
    pure texture so it reads as paper rather than "AI SaaS blob." */
