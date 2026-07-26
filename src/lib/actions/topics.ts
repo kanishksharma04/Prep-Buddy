@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
 import { addTopicsSchema, editTopicSchema } from "@/lib/validation/topic";
+import { REVISION_INTERVALS_DAYS } from "@/lib/revision";
 
 export type TopicFormState = { error?: string; ok?: boolean } | undefined;
 
@@ -123,7 +124,31 @@ export async function toggleTopicAction(id: string, isDone: boolean) {
 
   await db.topic.update({
     where: { id: topic.id },
-    data: { isDone, completedAt: isDone ? new Date() : null },
+    // Un/re-checking restarts the spaced-revision schedule from scratch —
+    // an old revisionStage would otherwise resurface it too soon (or not
+    // at all) relative to this new completion.
+    data: {
+      isDone,
+      completedAt: isDone ? new Date() : null,
+      revisionStage: 0,
+      lastRevisedAt: null,
+    },
+  });
+  revalidatePath(`/subjects/${topic.subjectId}`);
+  revalidatePath("/dashboard");
+}
+
+export async function markRevisedAction(id: string) {
+  const user = await requireUser();
+
+  const topic = await db.topic.findFirst({
+    where: { id, subject: { userId: user.id } },
+  });
+  if (!topic || !topic.isDone || topic.revisionStage >= REVISION_INTERVALS_DAYS.length) return;
+
+  await db.topic.update({
+    where: { id: topic.id },
+    data: { revisionStage: topic.revisionStage + 1, lastRevisedAt: new Date() },
   });
   revalidatePath(`/subjects/${topic.subjectId}`);
   revalidatePath("/dashboard");

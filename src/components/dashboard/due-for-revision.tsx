@@ -1,0 +1,87 @@
+"use client";
+
+import { useOptimistic, useTransition } from "react";
+import Link from "next/link";
+import { markRevisedAction } from "@/lib/actions/topics";
+import { REVISION_INTERVALS_DAYS } from "@/lib/revision";
+import { useToast } from "@/components/ui/toast-context";
+
+type DueTopic = {
+  id: string;
+  title: string;
+  subjectId: string;
+  subjectName: string;
+  revisionStage: number;
+};
+
+export function DueForRevision({
+  dueTopics,
+  totalEligible,
+}: {
+  dueTopics: DueTopic[];
+  totalEligible: number;
+}) {
+  const [optimisticDue, setOptimisticDue] = useOptimistic(
+    dueTopics,
+    (current, revisedId: string) => current.filter((topic) => topic.id !== revisedId),
+  );
+  const [, startTransition] = useTransition();
+  const { showToast } = useToast();
+
+  function handleMarkRevised(topic: DueTopic) {
+    startTransition(async () => {
+      setOptimisticDue(topic.id);
+      await markRevisedAction(topic.id);
+      showToast(`"${topic.title}" revised`);
+    });
+  }
+
+  return (
+    <div className="border-border bg-surface rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold">Due for revision</h2>
+        {optimisticDue.length > 0 ? (
+          <span className="bg-primary/10 text-primary rounded-md px-2.5 py-1 text-sm font-semibold">
+            {optimisticDue.length} due
+          </span>
+        ) : null}
+      </div>
+
+      {optimisticDue.length === 0 ? (
+        <p className="text-muted-foreground mt-3 text-sm">
+          {totalEligible === 0
+            ? "Complete some topics to start your spaced-revision schedule."
+            : "All caught up — nothing due for review right now."}
+        </p>
+      ) : (
+        <ul className="mt-3 flex flex-col">
+          {optimisticDue.map((topic) => (
+            <li
+              key={topic.id}
+              className="border-border flex items-center justify-between gap-3 border-t py-2.5 first:border-t-0 first:pt-0"
+            >
+              <div className="min-w-0">
+                <Link
+                  href={`/subjects/${topic.subjectId}`}
+                  className="rounded-md text-sm font-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                >
+                  {topic.title}
+                </Link>
+                <p className="text-muted-foreground truncate text-xs">
+                  {topic.subjectName} · Day {REVISION_INTERVALS_DAYS[topic.revisionStage]} review
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleMarkRevised(topic)}
+                className="border-control shrink-0 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                Revised
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

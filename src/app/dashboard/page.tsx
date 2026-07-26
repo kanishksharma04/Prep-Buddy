@@ -8,12 +8,14 @@ import { SummaryStrip } from "@/components/subjects/summary-strip";
 import { CalendarView } from "@/components/calendar/calendar-view";
 import { ViewToggle } from "@/components/dashboard/view-toggle";
 import { StreakHeatmap } from "@/components/dashboard/streak-heatmap";
+import { DueForRevision } from "@/components/dashboard/due-for-revision";
+import { REVISION_INTERVALS_DAYS, getNextReviewDate, isDueForRevision } from "@/lib/revision";
 
 export default async function DashboardPage() {
   const user = await requireUser();
   const now = new Date();
 
-  const [subjectsRaw, classEventsRaw, completedTopics] = await Promise.all([
+  const [subjectsRaw, classEventsRaw, completedTopics, revisableTopics] = await Promise.all([
     db.subject.findMany({
       where: { userId: user.id },
       include: { topics: { select: { isDone: true } } },
@@ -27,7 +29,36 @@ export default async function DashboardPage() {
       where: { subject: { userId: user.id }, completedAt: { not: null } },
       select: { completedAt: true },
     }),
+    db.topic.findMany({
+      where: {
+        subject: { userId: user.id },
+        isDone: true,
+        revisionStage: { lt: REVISION_INTERVALS_DAYS.length },
+      },
+      select: {
+        id: true,
+        title: true,
+        subjectId: true,
+        isDone: true,
+        completedAt: true,
+        revisionStage: true,
+        lastRevisedAt: true,
+        subject: { select: { name: true } },
+      },
+    }),
   ]);
+
+  const dueTopics = revisableTopics
+    .filter((topic) => isDueForRevision(topic, now))
+    .map((topic) => ({
+      id: topic.id,
+      title: topic.title,
+      subjectId: topic.subjectId,
+      subjectName: topic.subject.name,
+      revisionStage: topic.revisionStage,
+      dueDate: getNextReviewDate(topic)!,
+    }))
+    .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
 
   const subjects = sortByNearestExam(
     subjectsRaw.map((subject) => ({
@@ -128,6 +159,7 @@ export default async function DashboardPage() {
                 : null
             }
           />
+          <DueForRevision dueTopics={dueTopics} totalEligible={revisableTopics.length} />
           <StreakHeatmap
             completedDates={completedTopics.map((topic) => topic.completedAt!)}
             now={now}

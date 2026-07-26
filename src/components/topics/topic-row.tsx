@@ -7,14 +7,19 @@ import {
   moveTopicAction,
   toggleTopicAction,
   addTopicsAction,
+  markRevisedAction,
 } from "@/lib/actions/topics";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast-context";
+import { isDueForRevision, REVISION_INTERVALS_DAYS } from "@/lib/revision";
 
 type Topic = {
   id: string;
   title: string;
   isDone: boolean;
+  completedAt: Date | null;
+  revisionStage: number;
+  lastRevisedAt: Date | null;
   children: Topic[];
 };
 
@@ -89,7 +94,14 @@ export function TopicRow({
     showToast(`"${topic.title}" deleted`);
   }
 
+  async function handleMarkRevised() {
+    await markRevisedAction(topic.id);
+    showToast(`"${topic.title}" revised`);
+  }
+
   const childrenDone = topic.children.filter((child) => child.isDone).length;
+  const isDue = isDueForRevision(topic);
+  const isMastered = topic.isDone && topic.revisionStage >= REVISION_INTERVALS_DAYS.length;
 
   if (isEditing) {
     return (
@@ -172,6 +184,20 @@ export function TopicRow({
           {topic.children.length > 0 ? (
             <span className="text-muted-foreground ml-2 text-xs font-normal tabular-nums no-underline">
               {childrenDone}/{topic.children.length}
+            </span>
+          ) : null}
+          {isDue ? (
+            <button
+              type="button"
+              onClick={handleMarkRevised}
+              className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-800 no-underline transition-colors hover:bg-amber-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-amber-400"
+            >
+              Revise · Day {REVISION_INTERVALS_DAYS[topic.revisionStage]}
+            </button>
+          ) : null}
+          {isMastered ? (
+            <span className="text-muted-foreground ml-2 text-xs font-normal no-underline">
+              ✓ mastered
             </span>
           ) : null}
         </span>
