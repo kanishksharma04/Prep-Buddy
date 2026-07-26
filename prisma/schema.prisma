@@ -66,6 +66,9 @@ model Topic {
   id          String    @id @default(cuid())
   subjectId   String
   subject     Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  parentId    String?
+  parent      Topic?    @relation("TopicSubtopics", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Topic[]   @relation("TopicSubtopics")
   title       String
   isDone      Boolean   @default(false)
   completedAt DateTime?
@@ -73,4 +76,5 @@ model Topic {
   createdAt   DateTime  @default(now())
 
   @@index([subjectId])
+  @@index([parentId])
 }

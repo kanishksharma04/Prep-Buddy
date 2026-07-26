@@ -10,6 +10,7 @@ import { ProgressBar } from "@/components/subjects/progress-bar";
 import { PaceBadge } from "@/components/subjects/pace-badge";
 import { SubjectLinks } from "@/components/subjects/subject-links";
 import { getPace } from "@/lib/pace";
+import { buildTopicTree } from "@/lib/topic-tree";
 
 export default async function SubjectPage({
   params,
@@ -31,6 +32,7 @@ export default async function SubjectPage({
   }
 
   const doneCount = subject.topics.filter((topic) => topic.isDone).length;
+  const topicTree = buildTopicTree(subject.topics);
   const pace = getPace({
     examDate: subject.examDate,
     createdAt: subject.createdAt,
@@ -73,12 +75,13 @@ export default async function SubjectPage({
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {subject.topics.map((topic, index) => (
+          {topicTree.map((topic, index) => (
             <TopicRow
               key={topic.id}
               topic={topic}
+              subjectId={subject.id}
               isFirst={index === 0}
-              isLast={index === subject.topics.length - 1}
+              isLast={index === topicTree.length - 1}
             />
           ))}
         </ul>

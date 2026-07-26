@@ -18,6 +18,7 @@ export async function addTopicsAction(
   const parsed = addTopicsSchema.safeParse({
     subjectId: formData.get("subjectId"),
     titles: formData.get("titles"),
+    parentId: formData.get("parentId"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -31,6 +32,17 @@ export async function addTopicsAction(
     return { error: "Subject not found" };
   }
 
+  const parentId = parsed.data.parentId ?? null;
+  if (parentId) {
+    const parent = await db.topic.findFirst({
+      where: { id: parentId, subjectId: subject.id },
+      select: { id: true },
+    });
+    if (!parent) {
+      return { error: "Parent topic not found" };
+    }
+  }
+
   const titles = parsed.data.titles
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -41,11 +53,12 @@ export async function addTopicsAction(
     return { error: "Enter at least one topic" };
   }
 
-  const startOrder = await db.topic.count({ where: { subjectId: subject.id } });
+  const startOrder = await db.topic.count({ where: { subjectId: subject.id, parentId } });
 
   await db.topic.createMany({
     data: titles.map((title, index) => ({
       subjectId: subject.id,
+      parentId,
       title,
       order: startOrder + index,
     })),
@@ -132,6 +145,7 @@ export async function moveTopicAction(formData: FormData) {
   const neighbor = await db.topic.findFirst({
     where: {
       subjectId: topic.subjectId,
+      parentId: topic.parentId,
       order: direction === "up" ? { lt: topic.order } : { gt: topic.order },
     },
     orderBy: { order: direction === "up" ? "desc" : "asc" },

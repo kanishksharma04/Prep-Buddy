@@ -3,6 +3,7 @@ import { z } from "zod";
 export const addTopicsSchema = z.object({
   subjectId: z.string().min(1),
   titles: z.string().min(1, "Enter at least one topic"),
+  parentId: z.string().min(1).nullish(),
 });
 
 export const editTopicSchema = z.object({
