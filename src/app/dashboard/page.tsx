@@ -9,6 +9,7 @@ import { CalendarView } from "@/components/calendar/calendar-view";
 import { ViewToggle } from "@/components/dashboard/view-toggle";
 import { StreakHeatmap } from "@/components/dashboard/streak-heatmap";
 import { DueForRevision } from "@/components/dashboard/due-for-revision";
+import { PaceRollup } from "@/components/dashboard/pace-rollup";
 import { REVISION_INTERVALS_DAYS, getNextReviewDate, isDueForRevision } from "@/lib/revision";
 
 export default async function DashboardPage() {
@@ -78,6 +79,25 @@ export default async function DashboardPage() {
   const doneTopics = subjects.reduce((sum, s) => sum + s.topicsDone, 0);
   const nextExamSubject = findNextExam(subjects);
 
+  // Computed once and reused for both the per-card badges and the
+  // dashboard-wide rollup, so the two never drift out of sync.
+  const subjectPaces = subjects.map((subject) =>
+    getPace({
+      examDate: subject.examDate,
+      createdAt: subject.createdAt,
+      topicsTotal: subject.topicsTotal,
+      topicsDone: subject.topicsDone,
+      now,
+    }),
+  );
+
+  const paceRollupSubjects = subjects
+    .map((subject, index) => {
+      const pace = subjectPaces[index];
+      return pace ? { id: subject.id, name: subject.name, status: pace.status } : null;
+    })
+    .filter((subject) => subject !== null);
+
   const examMarkers = subjectsRaw
     .filter((subject) => subject.examDate)
     .map((subject) => ({
@@ -130,18 +150,7 @@ export default async function DashboardPage() {
     ) : (
       <ul className="flex flex-col gap-4">
         {subjects.map((subject, index) => (
-          <SubjectCard
-            key={subject.id}
-            subject={subject}
-            index={index}
-            pace={getPace({
-              examDate: subject.examDate,
-              createdAt: subject.createdAt,
-              topicsTotal: subject.topicsTotal,
-              topicsDone: subject.topicsDone,
-              now,
-            })}
-          />
+          <SubjectCard key={subject.id} subject={subject} index={index} pace={subjectPaces[index]} />
         ))}
       </ul>
     );
@@ -169,6 +178,7 @@ export default async function DashboardPage() {
 
       {subjects.length > 0 ? (
         <>
+          <PaceRollup subjects={paceRollupSubjects} />
           <SummaryStrip
             totalTopics={totalTopics}
             doneTopics={doneTopics}
