@@ -8,12 +8,14 @@ import {
   toggleTopicAction,
   addTopicsAction,
   markRevisedAction,
+  reorderTopicsAction,
 } from "@/lib/actions/topics";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast-context";
 import { isDueForRevision, REVISION_INTERVALS_DAYS } from "@/lib/revision";
+import { useDragReorder } from "@/lib/use-drag-reorder";
 
-type Topic = {
+export type Topic = {
   id: string;
   title: string;
   isDone: boolean;
@@ -27,16 +29,56 @@ type Topic = {
 // instead of a per-row margin-left pushing rows past the container edge.
 const INDENT_PX = 22;
 
+// One level of siblings (top-level topics, or the subtopics under one
+// parent) with its own drag-reorder state — TopicRow recurses into this
+// for its children rather than mapping them directly, so each nesting
+// level's drag gesture is scoped independently.
+export function TopicList({
+  topics,
+  subjectId,
+  parentId,
+  style,
+}: {
+  topics: Topic[];
+  subjectId: string;
+  parentId: string | null;
+  style?: React.CSSProperties;
+}) {
+  const { displayItems, getHandleProps, getTargetProps } = useDragReorder(topics, (orderedIds) => {
+    reorderTopicsAction(orderedIds, subjectId, parentId);
+  });
+
+  return (
+    <ul className="flex flex-col gap-2" style={style}>
+      {displayItems.map((topic, index) => (
+        <TopicRow
+          key={topic.id}
+          topic={topic}
+          subjectId={subjectId}
+          isFirst={index === 0}
+          isLast={index === displayItems.length - 1}
+          dragHandleProps={getHandleProps(topic.id)}
+          dragTargetProps={getTargetProps(topic.id)}
+        />
+      ))}
+    </ul>
+  );
+}
+
 export function TopicRow({
   topic,
   subjectId,
   isFirst,
   isLast,
+  dragHandleProps,
+  dragTargetProps,
 }: {
   topic: Topic;
   subjectId: string;
   isFirst: boolean;
   isLast: boolean;
+  dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
+  dragTargetProps?: React.HTMLAttributes<HTMLLIElement>;
 }) {
   const [optimisticDone, setOptimisticDone] = useOptimistic(
     topic.isDone,
@@ -143,8 +185,25 @@ export function TopicRow({
   }
 
   return (
-    <li className="flex flex-col gap-2">
+    <li {...dragTargetProps} className="flex flex-col gap-2">
       <div className="border-border bg-surface group flex items-center gap-2 rounded-lg border p-3 shadow-[3px_3px_0_0_var(--paper-shadow)] transition-colors duration-200 hover:border-primary/40">
+        {dragHandleProps ? (
+          <button
+            type="button"
+            {...dragHandleProps}
+            aria-label={`Drag to reorder "${topic.title}"`}
+            className="text-muted-foreground shrink-0 cursor-grab touch-none rounded-md p-1 transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:cursor-grabbing"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-3.5 w-3.5">
+              <circle cx="9" cy="6" r="1.4" />
+              <circle cx="15" cy="6" r="1.4" />
+              <circle cx="9" cy="12" r="1.4" />
+              <circle cx="15" cy="12" r="1.4" />
+              <circle cx="9" cy="18" r="1.4" />
+              <circle cx="15" cy="18" r="1.4" />
+            </svg>
+          </button>
+        ) : null}
         {topic.children.length > 0 ? (
           <button
             type="button"
@@ -311,17 +370,12 @@ export function TopicRow({
       ) : null}
 
       {isExpanded && topic.children.length > 0 ? (
-        <ul className="flex flex-col gap-2" style={{ paddingLeft: INDENT_PX }}>
-          {topic.children.map((child, index) => (
-            <TopicRow
-              key={child.id}
-              topic={child}
-              subjectId={subjectId}
-              isFirst={index === 0}
-              isLast={index === topic.children.length - 1}
-            />
-          ))}
-        </ul>
+        <TopicList
+          topics={topic.children}
+          subjectId={subjectId}
+          parentId={topic.id}
+          style={{ paddingLeft: INDENT_PX }}
+        />
       ) : null}
     </li>
   );

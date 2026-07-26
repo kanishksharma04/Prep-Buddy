@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
-import { renameSubjectAction, deleteSubjectAction } from "@/lib/actions/subjects";
+import { renameSubjectAction, deleteSubjectAction, moveSubjectAction } from "@/lib/actions/subjects";
 import { formatDate, toDateInputValue } from "@/lib/format";
 import { Countdown } from "@/components/subjects/countdown";
 import { ProgressBar } from "@/components/subjects/progress-bar";
@@ -37,10 +37,20 @@ export function SubjectCard({
   subject,
   index = 0,
   pace = null,
+  isManualSort = false,
+  isFirst = false,
+  isLast = false,
+  dragHandleProps,
+  dragTargetProps,
 }: {
   subject: Subject;
   index?: number;
   pace?: PaceResult | null;
+  isManualSort?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
+  dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
+  dragTargetProps?: React.HTMLAttributes<HTMLLIElement>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -139,6 +149,7 @@ export function SubjectCard({
 
   return (
     <li
+      {...dragTargetProps}
       style={{ transformOrigin: "center" }}
       className={`group border-border bg-surface relative flex flex-col gap-3 rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-1 hover:rotate-0 hover:shadow-[6px_6px_0_0_var(--paper-shadow)] ${tiltClass}`}
     >
@@ -149,32 +160,84 @@ export function SubjectCard({
       />
 
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Link
-            href={`/subjects/${subject.id}`}
-            className="group/link inline-flex items-center gap-1 rounded-md text-base font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
-            <span className="group-hover/link:text-primary transition-colors group-hover/link:underline">
-              {subject.name}
-            </span>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className="text-muted-foreground h-4 w-4 shrink-0 transition-transform duration-200 group-hover/link:translate-x-0.5"
+        <div className="flex items-start gap-2">
+          {isManualSort ? (
+            <button
+              type="button"
+              {...dragHandleProps}
+              aria-label={`Drag to reorder "${subject.name}"`}
+              className="text-muted-foreground mt-0.5 shrink-0 cursor-grab touch-none rounded-md p-1 transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:cursor-grabbing"
             >
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </Link>
-          <p className="text-muted-foreground text-sm">
-            {subject.examDate ? `Exam: ${formatDate(subject.examDate)}` : "No exam date set"}
-          </p>
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                className="h-4 w-4"
+              >
+                <circle cx="9" cy="6" r="1.4" />
+                <circle cx="15" cy="6" r="1.4" />
+                <circle cx="9" cy="12" r="1.4" />
+                <circle cx="15" cy="12" r="1.4" />
+                <circle cx="9" cy="18" r="1.4" />
+                <circle cx="15" cy="18" r="1.4" />
+              </svg>
+            </button>
+          ) : null}
+          <div>
+            <Link
+              href={`/subjects/${subject.id}`}
+              className="group/link inline-flex items-center gap-1 rounded-md text-base font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <span className="group-hover/link:text-primary transition-colors group-hover/link:underline">
+                {subject.name}
+              </span>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                className="text-muted-foreground h-4 w-4 shrink-0 transition-transform duration-200 group-hover/link:translate-x-0.5"
+              >
+                <path d="M9 6l6 6-6 6" />
+              </svg>
+            </Link>
+            <p className="text-muted-foreground text-sm">
+              {subject.examDate ? `Exam: ${formatDate(subject.examDate)}` : "No exam date set"}
+            </p>
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
+          {isManualSort ? (
+            <>
+              <form action={moveSubjectAction}>
+                <input type="hidden" name="id" value={subject.id} />
+                <input type="hidden" name="direction" value="up" />
+                <button
+                  type="submit"
+                  disabled={isFirst}
+                  aria-label={`Move "${subject.name}" up`}
+                  className="rounded-lg p-1.5 text-sm transition-colors hover:bg-background disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                >
+                  ↑
+                </button>
+              </form>
+              <form action={moveSubjectAction}>
+                <input type="hidden" name="id" value={subject.id} />
+                <input type="hidden" name="direction" value="down" />
+                <button
+                  type="submit"
+                  disabled={isLast}
+                  aria-label={`Move "${subject.name}" down`}
+                  className="rounded-lg p-1.5 text-sm transition-colors hover:bg-background disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                >
+                  ↓
+                </button>
+              </form>
+            </>
+          ) : null}
           <button
             type="button"
             onClick={() => setIsEditing(true)}

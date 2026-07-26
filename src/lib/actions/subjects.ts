@@ -110,3 +110,47 @@ export async function deleteSubjectAction(formData: FormData) {
   await db.subject.deleteMany({ where: { id, userId: user.id } });
   revalidatePath("/dashboard");
 }
+
+export async function moveSubjectAction(formData: FormData) {
+  const user = await requireUser();
+
+  const id = formData.get("id");
+  const direction = formData.get("direction");
+  if (typeof id !== "string" || !id) return;
+  if (direction !== "up" && direction !== "down") return;
+
+  const subject = await db.subject.findFirst({ where: { id, userId: user.id } });
+  if (!subject) return;
+
+  const neighbor = await db.subject.findFirst({
+    where: {
+      userId: user.id,
+      order: direction === "up" ? { lt: subject.order } : { gt: subject.order },
+    },
+    orderBy: { order: direction === "up" ? "desc" : "asc" },
+  });
+  if (!neighbor) return;
+
+  await db.$transaction([
+    db.subject.update({ where: { id: subject.id }, data: { order: neighbor.order } }),
+    db.subject.update({ where: { id: neighbor.id }, data: { order: subject.order } }),
+  ]);
+
+  revalidatePath("/dashboard");
+}
+
+export async function reorderSubjectsAction(orderedIds: string[]) {
+  const user = await requireUser();
+
+  const subjects = await db.subject.findMany({ where: { userId: user.id }, select: { id: true } });
+  const subjectIds = new Set(subjects.map((subject) => subject.id));
+  if (orderedIds.length !== subjectIds.size || !orderedIds.every((id) => subjectIds.has(id))) {
+    return;
+  }
+
+  await db.$transaction(
+    orderedIds.map((id, index) => db.subject.update({ where: { id }, data: { order: index } })),
+  );
+
+  revalidatePath("/dashboard");
+}

@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { sortByNearestExam, findNextExam } from "@/lib/sort-subjects";
 import { getPace } from "@/lib/pace";
 import { CreateSubjectForm } from "@/components/subjects/create-subject-form";
-import { SubjectCard } from "@/components/subjects/subject-card";
+import { SubjectList } from "@/components/subjects/subject-list";
 import { SummaryStrip } from "@/components/subjects/summary-strip";
 import { CalendarView } from "@/components/calendar/calendar-view";
 import { ViewToggle } from "@/components/dashboard/view-toggle";
@@ -98,6 +98,9 @@ export default async function DashboardPage() {
     })
     .filter((subject) => subject !== null);
 
+  const paceById = Object.fromEntries(subjects.map((subject, index) => [subject.id, subjectPaces[index]]));
+  const subjectsByOrder = [...subjects].sort((a, b) => a.order - b.order);
+
   const examMarkers = subjectsRaw
     .filter((subject) => subject.examDate)
     .map((subject) => ({
@@ -148,11 +151,7 @@ export default async function DashboardPage() {
         </p>
       </div>
     ) : (
-      <ul className="flex flex-col gap-4">
-        {subjects.map((subject, index) => (
-          <SubjectCard key={subject.id} subject={subject} index={index} pace={subjectPaces[index]} />
-        ))}
-      </ul>
+      <SubjectList subjectsByExam={subjects} subjectsByOrder={subjectsByOrder} paceById={paceById} />
     );
 
   const calendarView = (

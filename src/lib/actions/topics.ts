@@ -184,3 +184,32 @@ export async function moveTopicAction(formData: FormData) {
 
   revalidatePath(`/subjects/${topic.subjectId}`);
 }
+
+export async function reorderTopicsAction(
+  orderedIds: string[],
+  subjectId: string,
+  parentId: string | null,
+) {
+  const user = await requireUser();
+
+  const subject = await db.subject.findFirst({
+    where: { id: subjectId, userId: user.id },
+    select: { id: true },
+  });
+  if (!subject) return;
+
+  const siblings = await db.topic.findMany({
+    where: { subjectId, parentId },
+    select: { id: true },
+  });
+  const siblingIds = new Set(siblings.map((topic) => topic.id));
+  if (orderedIds.length !== siblingIds.size || !orderedIds.every((id) => siblingIds.has(id))) {
+    return;
+  }
+
+  await db.$transaction(
+    orderedIds.map((id, index) => db.topic.update({ where: { id }, data: { order: index } })),
+  );
+
+  revalidatePath(`/subjects/${subjectId}`);
+}

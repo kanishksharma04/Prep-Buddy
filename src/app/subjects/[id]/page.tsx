@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
 import { AddTopicsForm } from "@/components/topics/add-topics-form";
-import { TopicRow } from "@/components/topics/topic-row";
+import { TopicList } from "@/components/topics/topic-row";
 import { ExamDatePicker } from "@/components/subjects/exam-date-picker";
 import { Countdown } from "@/components/subjects/countdown";
 import { ProgressBar } from "@/components/subjects/progress-bar";
@@ -74,17 +74,7 @@ export default async function SubjectPage({
           No topics yet — paste your syllabus above, one topic per line.
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
-          {topicTree.map((topic, index) => (
-            <TopicRow
-              key={topic.id}
-              topic={topic}
-              subjectId={subject.id}
-              isFirst={index === 0}
-              isLast={index === topicTree.length - 1}
-            />
-          ))}
-        </ul>
+        <TopicList topics={topicTree} subjectId={subject.id} parentId={null} />
       )}
     </main>
   );
