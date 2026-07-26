@@ -117,6 +117,36 @@ body {
   }
 }
 
+/* Site-wide interaction polish for every `.border-control` element (form
+   fields and outline/secondary buttons — see the --color-control comment
+   above) in one place, instead of repeating hover/active classes across
+   ~15 forms. Scoped by tag so it can't fight a component's own hover
+   override (e.g. the header's Log out button turns its border red on
+   hover; that Tailwind utility class still wins there since this rule
+   only ever targets input/textarea/select). */
+input.border-control,
+textarea.border-control,
+select.border-control {
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+input.border-control:hover,
+textarea.border-control:hover,
+select.border-control:hover {
+  border-color: var(--primary);
+}
+
+/* A quick tactile press for every outline/secondary button — primary
+   (filled) buttons already get this via their own translate/shadow
+   classes; this fills the same gap for Rename/Cancel/Edit/etc. */
+button.border-control {
+  transition: transform 100ms ease-out;
+}
+button.border-control:active {
+  transform: scale(0.96);
+}
+
 /* Paper grain: a tiled SVG noise filter, not a color gradient — this is what
    stands in for the old ambient blue/violet glow. Fixed + behind everything,
    pure texture so it reads as paper rather than "AI SaaS blob." */

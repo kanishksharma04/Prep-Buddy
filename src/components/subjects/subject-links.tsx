@@ -46,7 +46,7 @@ export function SubjectLinks({
           {links.map((link) => (
             <li
               key={link.id}
-              className="border-border bg-background flex items-center justify-between gap-2 rounded-md border p-2.5 transition-colors hover:border-primary/40"
+              className="border-border bg-background flex items-center justify-between gap-2 rounded-md border p-2.5 transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[2px_2px_0_0_var(--paper-shadow)]"
             >
               <a
                 href={link.url}

@@ -198,7 +198,7 @@ export function CalendarView({
                 type="button"
                 onClick={() => setSelectedKey(key)}
                 aria-label={`${MONTH_NAMES[cell.month]} ${cell.day}, ${cell.year}${hasContent ? `, ${totalEvents} event${totalEvents === 1 ? "" : "s"}` : ""}${dayStudy.length > 0 ? `, ${dayStudy.length} topic${dayStudy.length === 1 ? "" : "s"} studied` : ""}`}
-                className={`relative flex min-h-16 flex-col items-start gap-0.5 rounded-md border p-1.5 text-left transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-h-20 ${
+                className={`relative flex min-h-16 flex-col items-start gap-0.5 rounded-md border p-1.5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[2px_2px_0_0_var(--paper-shadow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-h-20 ${
                   cell.isCurrentMonth ? "border-border" : "border-transparent opacity-40"
                 } ${cell.isToday ? "border-primary/70 ring-primary/25 ring-2" : "hover:border-primary/40 hover:bg-background"}`}
               >

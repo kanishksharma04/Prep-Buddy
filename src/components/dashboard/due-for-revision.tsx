@@ -37,7 +37,7 @@ export function DueForRevision({
   }
 
   return (
-    <div className="border-border bg-surface rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)]">
+    <div className="border-border bg-surface rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--paper-shadow)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-semibold">Due for revision</h2>
         {optimisticDue.length > 0 ? (
@@ -58,7 +58,7 @@ export function DueForRevision({
           {optimisticDue.map((topic) => (
             <li
               key={topic.id}
-              className="border-border flex items-center justify-between gap-3 border-t py-2.5 first:border-t-0 first:pt-0"
+              className="border-border hover:bg-background -mx-2 flex items-center justify-between gap-3 border-t px-2 py-2.5 transition-colors first:border-t-0 first:pt-0"
             >
               <div className="min-w-0">
                 <Link

@@ -5,12 +5,12 @@ export function Logo() {
   return (
     <Link
       href="/"
-      className="flex items-center gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className="group flex items-center gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
-      <LogoMark className="h-8 w-8 shrink-0 dark:drop-shadow-[0_0_6px_rgba(59,130,246,0.5)]" />
+      <LogoMark className="h-8 w-8 shrink-0 transition-transform duration-300 ease-out group-hover:-rotate-6 group-hover:scale-110 dark:drop-shadow-[0_0_6px_rgba(59,130,246,0.5)]" />
       <span className="font-serif text-xl font-semibold tracking-tight whitespace-nowrap italic">
         <span className="text-foreground not-italic">Prep</span>{" "}
-        <span className="text-primary">Buddy</span>
+        <span className="text-primary transition-colors group-hover:text-accent">Buddy</span>
       </span>
     </Link>
   );

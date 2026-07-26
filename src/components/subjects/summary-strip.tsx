@@ -10,8 +10,8 @@ function SummaryRow({
   value: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-md">
+    <div className="group hover:bg-background -mx-2 flex items-center gap-3 rounded-md px-2 py-1 transition-colors">
+      <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-transform duration-200 group-hover:scale-110">
         {icon}
       </div>
       <div className="min-w-0">
@@ -39,7 +39,7 @@ export function SummaryStrip({
   nextExam: { subjectName: string; examDate: Date } | null;
 }) {
   return (
-    <div className="border-border bg-surface flex flex-col gap-4 rounded-lg border p-5 shadow-[3px_3px_0_0_var(--paper-shadow)]">
+    <div className="border-border bg-surface flex flex-col gap-4 rounded-lg border p-5 shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_var(--paper-shadow)]">
       <SummaryRow
         icon={
           <svg

@@ -13,7 +13,7 @@ export function PaceRollup({ subjects }: { subjects: RollupSubject[] }) {
   }
 
   return (
-    <div className="border-border bg-surface flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border px-5 py-3.5 shadow-[3px_3px_0_0_var(--paper-shadow)]">
+    <div className="border-border bg-surface flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border px-5 py-3.5 shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_var(--paper-shadow)]">
       <span className="text-sm font-semibold">Pace check</span>
       {behind.length > 0 ? (
         <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-medium text-red-700 dark:text-red-400">

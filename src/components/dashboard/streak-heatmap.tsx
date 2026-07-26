@@ -22,7 +22,7 @@ export function StreakHeatmap({
   const weeks = buildHeatmap(completedDates, WEEKS, now);
 
   return (
-    <div className="border-border bg-surface rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)]">
+    <div className="border-border bg-surface rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--paper-shadow)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-semibold">Study activity</h2>
         <div className="bg-primary/10 text-primary inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-semibold">
@@ -63,7 +63,7 @@ export function StreakHeatmap({
                   <div
                     key={day.date}
                     title={`${day.date}: ${day.count} topic${day.count === 1 ? "" : "s"} completed`}
-                    className={`h-[11px] w-[11px] rounded-[2px] border ${levelClass(day.count)}`}
+                    className={`h-[11px] w-[11px] scale-100 rounded-xs border transition-transform duration-100 hover:scale-150 ${levelClass(day.count)}`}
                   />
                 ),
               )}
