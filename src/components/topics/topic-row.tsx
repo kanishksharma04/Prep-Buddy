@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useOptimistic, useState, useTransition } from "react";
+import { useActionState, useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import {
   editTopicAction,
   deleteTopicAction,
@@ -91,6 +91,8 @@ export function TopicRow({
   const [isExpanded, setIsExpanded] = useState(true);
   const [state, formAction, isPending] = useActionState(editTopicAction, undefined);
   const [addState, addFormAction, isAddPending] = useActionState(addTopicsAction, undefined);
+  const addSubtopicFormRef = useRef<HTMLFormElement>(null);
+  const addSubtopicTextareaRef = useRef<HTMLTextAreaElement>(null);
   const { showToast } = useToast();
 
   // showToast reaches into ToastProvider's state, so it needs an effect
@@ -111,16 +113,25 @@ export function TopicRow({
     }
   }
 
-  // Same derived-render pattern for the add-subtopic form: close it and
-  // reveal the new subtopic once the action succeeds.
+  // Same derived-render pattern: reveal the new subtopic once the action
+  // succeeds. The form stays open (see the effect below) so Enter can keep
+  // adding subtopics one after another without reopening it each time.
   const [handledAddState, setHandledAddState] = useState(addState);
   if (addState !== handledAddState) {
     setHandledAddState(addState);
     if (addState?.ok) {
-      setIsAddingSubtopic(false);
       setIsExpanded(true);
     }
   }
+
+  // Clearing the textarea and refocusing it is a ref/DOM operation, so —
+  // unlike the plain setState above — it has to run in an effect.
+  useEffect(() => {
+    if (addState?.ok) {
+      addSubtopicFormRef.current?.reset();
+      addSubtopicTextareaRef.current?.focus();
+    }
+  }, [addState]);
 
   function handleToggle(checked: boolean) {
     startTransition(async () => {
@@ -156,6 +167,11 @@ export function TopicRow({
             required
             maxLength={200}
             autoFocus
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setIsEditing(false);
+              }
+            }}
             className="border-control bg-background flex-1 rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           />
           <div className="flex gap-2">
@@ -239,7 +255,13 @@ export function TopicRow({
         <span
           className={`flex-1 text-sm transition-colors ${optimisticDone ? "text-muted-foreground line-through" : ""}`}
         >
-          {topic.title}
+          <span
+            onDoubleClick={() => setIsEditing(true)}
+            title="Double-click to rename"
+            className="cursor-text"
+          >
+            {topic.title}
+          </span>
           {topic.children.length > 0 ? (
             <span className="text-muted-foreground ml-2 text-xs font-normal tabular-nums no-underline">
               {childrenDone}/{topic.children.length}
@@ -331,6 +353,7 @@ export function TopicRow({
 
       {isAddingSubtopic ? (
         <form
+          ref={addSubtopicFormRef}
           action={addFormAction}
           style={{ marginLeft: INDENT_PX }}
           className="border-border bg-surface flex flex-col gap-2 rounded-lg border border-dashed p-3"
@@ -338,10 +361,20 @@ export function TopicRow({
           <input type="hidden" name="subjectId" value={subjectId} />
           <input type="hidden" name="parentId" value={topic.id} />
           <textarea
+            ref={addSubtopicTextareaRef}
             name="titles"
             required
             autoFocus
             rows={2}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                addSubtopicFormRef.current?.requestSubmit();
+              }
+              if (event.key === "Escape") {
+                setIsAddingSubtopic(false);
+              }
+            }}
             placeholder={"One subtopic per line, e.g.\nFirst Law of Thermodynamics"}
             className="border-control bg-background w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           />

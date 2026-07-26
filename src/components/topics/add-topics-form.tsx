@@ -7,11 +7,13 @@ import { useToast } from "@/components/ui/toast-context";
 export function AddTopicsForm({ subjectId }: { subjectId: string }) {
   const [state, formAction, isPending] = useActionState(addTopicsAction, undefined);
   const formRef = useRef<HTMLFormElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
     if (state?.ok) {
       formRef.current?.reset();
+      textareaRef.current?.focus();
       showToast("Topics added");
     }
   }, [state, showToast]);
@@ -29,13 +31,26 @@ export function AddTopicsForm({ subjectId }: { subjectId: string }) {
           Add topics
         </label>
         <textarea
+          ref={textareaRef}
           id="titles"
           name="titles"
           required
           rows={4}
+          onKeyDown={(event) => {
+            // Enter adds the topic(s) typed so far and keeps the form open
+            // for the next one; Shift+Enter still inserts a literal newline
+            // for hand-typing several lines before submitting.
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              formRef.current?.requestSubmit();
+            }
+          }}
           placeholder={"One topic per line — paste your whole syllabus at once, or add a single topic.\ne.g.\nIntroduction to Thermodynamics\nFirst Law of Thermodynamics"}
           className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
+        <p className="text-muted-foreground text-xs">
+          Press Enter to add · Shift+Enter for a new line
+        </p>
       </div>
 
       {state?.error ? (
