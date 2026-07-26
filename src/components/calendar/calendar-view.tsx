@@ -27,15 +27,35 @@ type ClassMarker = {
   endDate: Date;
 };
 
+type StudyMarker = {
+  id: string;
+  title: string;
+  subjectId: string;
+  subjectName: string;
+  completedAt: Date;
+};
+
 type Subject = { id: string; name: string };
+
+// Dot opacity scales with how many topics were completed that day — a
+// quieter echo of the streak heatmap's intensity levels, kept subtle so it
+// doesn't compete with the exam/class pills for attention.
+function studyDotClass(count: number) {
+  if (count <= 0) return "";
+  if (count === 1) return "bg-green-600/50 dark:bg-green-500/50";
+  if (count === 2) return "bg-green-600/75 dark:bg-green-500/75";
+  return "bg-green-600 dark:bg-green-500";
+}
 
 export function CalendarView({
   exams,
   classEvents,
+  studyActivity,
   subjects,
 }: {
   exams: ExamMarker[];
   classEvents: ClassMarker[];
+  studyActivity: StudyMarker[];
   subjects: Subject[];
 }) {
   const today = useMemo(() => new Date(), []);
@@ -67,6 +87,17 @@ export function CalendarView({
     return map;
   }, [classEvents]);
 
+  const studyByDay = useMemo(() => {
+    const map = new Map<string, StudyMarker[]>();
+    for (const marker of studyActivity) {
+      const key = utcDateKey(marker.completedAt);
+      const list = map.get(key) ?? [];
+      list.push(marker);
+      map.set(key, list);
+    }
+    return map;
+  }, [studyActivity]);
+
   function goToMonth(delta: number) {
     setCursor((prev) => {
       const next = new Date(prev.year, prev.month + delta, 1);
@@ -92,6 +123,12 @@ export function CalendarView({
           subjectName: event.subjectName,
           startDate: event.startDate,
           endDate: event.endDate,
+        })),
+        studied: (studyByDay.get(selectedKey) ?? []).map((marker) => ({
+          id: marker.id,
+          title: marker.title,
+          subjectId: marker.subjectId,
+          subjectName: marker.subjectName,
         })),
         label: (() => {
           const [y, m, d] = selectedKey.split("-").map(Number);
@@ -151,6 +188,7 @@ export function CalendarView({
             const key = dateKey(cell.year, cell.month, cell.day);
             const dayExams = examsByDay.get(key) ?? [];
             const dayClasses = classesByDay.get(key) ?? [];
+            const dayStudy = studyByDay.get(key) ?? [];
             const totalEvents = dayExams.length + dayClasses.length;
             const hasContent = totalEvents > 0;
 
@@ -159,8 +197,8 @@ export function CalendarView({
                 key={key}
                 type="button"
                 onClick={() => setSelectedKey(key)}
-                aria-label={`${MONTH_NAMES[cell.month]} ${cell.day}, ${cell.year}${hasContent ? `, ${totalEvents} event${totalEvents === 1 ? "" : "s"}` : ""}`}
-                className={`flex min-h-16 flex-col items-start gap-0.5 rounded-md border p-1.5 text-left transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-h-20 ${
+                aria-label={`${MONTH_NAMES[cell.month]} ${cell.day}, ${cell.year}${hasContent ? `, ${totalEvents} event${totalEvents === 1 ? "" : "s"}` : ""}${dayStudy.length > 0 ? `, ${dayStudy.length} topic${dayStudy.length === 1 ? "" : "s"} studied` : ""}`}
+                className={`relative flex min-h-16 flex-col items-start gap-0.5 rounded-md border p-1.5 text-left transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-h-20 ${
                   cell.isCurrentMonth ? "border-border" : "border-transparent opacity-40"
                 } ${cell.isToday ? "border-primary/70 ring-primary/25 ring-2" : "hover:border-primary/40 hover:bg-background"}`}
               >
@@ -192,6 +230,12 @@ export function CalendarView({
                 {totalEvents > 2 ? (
                   <span className="text-muted-foreground text-[10px]">+{totalEvents - 2} more</span>
                 ) : null}
+                {dayStudy.length > 0 ? (
+                  <span
+                    aria-hidden="true"
+                    className={`absolute right-1.5 bottom-1.5 h-1.5 w-1.5 rounded-full ${studyDotClass(dayStudy.length)}`}
+                  />
+                ) : null}
               </button>
             );
           })}
@@ -203,6 +247,7 @@ export function CalendarView({
             label={selected.label}
             exams={selected.exams}
             classEvents={selected.classEvents}
+            studied={selected.studied}
             subjects={subjects}
             onClose={() => setSelectedKey(null)}
           />

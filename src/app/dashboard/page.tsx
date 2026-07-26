@@ -27,7 +27,13 @@ export default async function DashboardPage() {
     }),
     db.topic.findMany({
       where: { subject: { userId: user.id }, completedAt: { not: null } },
-      select: { completedAt: true },
+      select: {
+        id: true,
+        title: true,
+        subjectId: true,
+        completedAt: true,
+        subject: { select: { name: true } },
+      },
     }),
     db.topic.findMany({
       where: {
@@ -91,6 +97,14 @@ export default async function DashboardPage() {
 
   const subjectOptions = subjectsRaw.map((subject) => ({ id: subject.id, name: subject.name }));
 
+  const studyMarkers = completedTopics.map((topic) => ({
+    id: topic.id,
+    title: topic.title,
+    subjectId: topic.subjectId,
+    subjectName: topic.subject.name,
+    completedAt: topic.completedAt!,
+  }));
+
   const listView =
     subjects.length === 0 ? (
       <div className="border-border flex flex-col items-center gap-3 rounded-lg border border-dashed p-10 text-center">
@@ -133,7 +147,12 @@ export default async function DashboardPage() {
     );
 
   const calendarView = (
-    <CalendarView exams={examMarkers} classEvents={classMarkers} subjects={subjectOptions} />
+    <CalendarView
+      exams={examMarkers}
+      classEvents={classMarkers}
+      studyActivity={studyMarkers}
+      subjects={subjectOptions}
+    />
   );
 
   return (

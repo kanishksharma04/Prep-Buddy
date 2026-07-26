@@ -15,6 +15,7 @@ type ClassMarker = {
   startDate: Date;
   endDate: Date;
 };
+type StudiedTopic = { id: string; title: string; subjectId: string; subjectName: string };
 type Subject = { id: string; name: string };
 
 function formatRange(start: Date, end: Date): string | null {
@@ -29,6 +30,7 @@ export function DayDetailDialog({
   label,
   exams,
   classEvents,
+  studied,
   subjects,
   onClose,
 }: {
@@ -36,6 +38,7 @@ export function DayDetailDialog({
   label: string;
   exams: ExamMarker[];
   classEvents: ClassMarker[];
+  studied: StudiedTopic[];
   subjects: Subject[];
   onClose: () => void;
 }) {
@@ -107,6 +110,29 @@ export function DayDetailDialog({
                 Exam: {exam.subjectName}
               </Link>
             ))}
+          </div>
+        ) : null}
+
+        {studied.length > 0 ? (
+          <div className="mb-4 space-y-1.5">
+            <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+              Studied
+            </h3>
+            <ul className="space-y-1.5">
+              {studied.map((topic) => (
+                <li key={topic.id}>
+                  <Link
+                    href={`/subjects/${topic.subjectId}`}
+                    className="border-border bg-background flex items-center justify-between gap-2 rounded-md border p-3 transition-colors hover:border-primary/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  >
+                    <span className="min-w-0 truncate text-sm font-medium">{topic.title}</span>
+                    <span className="text-muted-foreground shrink-0 text-xs">
+                      {topic.subjectName}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : null}
 
