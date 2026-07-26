@@ -7,12 +7,13 @@ import { SubjectCard } from "@/components/subjects/subject-card";
 import { SummaryStrip } from "@/components/subjects/summary-strip";
 import { CalendarView } from "@/components/calendar/calendar-view";
 import { ViewToggle } from "@/components/dashboard/view-toggle";
+import { StreakHeatmap } from "@/components/dashboard/streak-heatmap";
 
 export default async function DashboardPage() {
   const user = await requireUser();
   const now = new Date();
 
-  const [subjectsRaw, classEventsRaw] = await Promise.all([
+  const [subjectsRaw, classEventsRaw, completedTopics] = await Promise.all([
     db.subject.findMany({
       where: { userId: user.id },
       include: { topics: { select: { isDone: true } } },
@@ -21,6 +22,10 @@ export default async function DashboardPage() {
       where: { userId: user.id },
       include: { subject: { select: { name: true } } },
       orderBy: { startDate: "asc" },
+    }),
+    db.topic.findMany({
+      where: { subject: { userId: user.id }, completedAt: { not: null } },
+      select: { completedAt: true },
     }),
   ]);
 
@@ -113,15 +118,21 @@ export default async function DashboardPage() {
       </div>
 
       {subjects.length > 0 ? (
-        <SummaryStrip
-          totalTopics={totalTopics}
-          doneTopics={doneTopics}
-          nextExam={
-            nextExamSubject
-              ? { subjectName: nextExamSubject.name, examDate: nextExamSubject.examDate! }
-              : null
-          }
-        />
+        <>
+          <SummaryStrip
+            totalTopics={totalTopics}
+            doneTopics={doneTopics}
+            nextExam={
+              nextExamSubject
+                ? { subjectName: nextExamSubject.name, examDate: nextExamSubject.examDate! }
+                : null
+            }
+          />
+          <StreakHeatmap
+            completedDates={completedTopics.map((topic) => topic.completedAt!)}
+            now={now}
+          />
+        </>
       ) : null}
 
       <CreateSubjectForm />

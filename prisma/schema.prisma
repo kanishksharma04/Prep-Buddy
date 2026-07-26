@@ -63,13 +63,14 @@ model ClassEvent {
 }
 
 model Topic {
-  id        String   @id @default(cuid())
-  subjectId String
-  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  title     String
-  isDone    Boolean  @default(false)
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
+  id          String    @id @default(cuid())
+  subjectId   String
+  subject     Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title       String
+  isDone      Boolean   @default(false)
+  completedAt DateTime?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
 
   @@index([subjectId])
 }

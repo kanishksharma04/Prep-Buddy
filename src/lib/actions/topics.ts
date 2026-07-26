@@ -108,8 +108,12 @@ export async function toggleTopicAction(id: string, isDone: boolean) {
   });
   if (!topic) return;
 
-  await db.topic.update({ where: { id: topic.id }, data: { isDone } });
+  await db.topic.update({
+    where: { id: topic.id },
+    data: { isDone, completedAt: isDone ? new Date() : null },
+  });
   revalidatePath(`/subjects/${topic.subjectId}`);
+  revalidatePath("/dashboard");
 }
 
 export async function moveTopicAction(formData: FormData) {
