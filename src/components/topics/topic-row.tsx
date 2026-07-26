@@ -44,9 +44,12 @@ export function TopicList({
   parentId: string | null;
   style?: React.CSSProperties;
 }) {
-  const { displayItems, getHandleProps, getTargetProps } = useDragReorder(topics, (orderedIds) => {
-    reorderTopicsAction(orderedIds, subjectId, parentId);
-  });
+  const { displayItems, getHandleProps, getTargetProps, isItemDragging } = useDragReorder(
+    topics,
+    (orderedIds) => {
+      reorderTopicsAction(orderedIds, subjectId, parentId);
+    },
+  );
 
   return (
     <ul className="flex flex-col gap-2" style={style}>
@@ -55,8 +58,10 @@ export function TopicList({
           key={topic.id}
           topic={topic}
           subjectId={subjectId}
+          index={index}
           isFirst={index === 0}
           isLast={index === displayItems.length - 1}
+          isBeingDragged={isItemDragging(topic.id)}
           dragHandleProps={getHandleProps(topic.id)}
           dragTargetProps={getTargetProps(topic.id)}
         />
@@ -68,15 +73,19 @@ export function TopicList({
 export function TopicRow({
   topic,
   subjectId,
+  index = 0,
   isFirst,
   isLast,
+  isBeingDragged = false,
   dragHandleProps,
   dragTargetProps,
 }: {
   topic: Topic;
   subjectId: string;
+  index?: number;
   isFirst: boolean;
   isLast: boolean;
+  isBeingDragged?: boolean;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
   dragTargetProps?: React.HTMLAttributes<HTMLLIElement>;
 }) {
@@ -201,7 +210,13 @@ export function TopicRow({
   }
 
   return (
-    <li {...dragTargetProps} className="flex flex-col gap-2">
+    <li
+      {...dragTargetProps}
+      style={{ animation: `fade-up-in 0.35s ease-out ${index * 40}ms backwards` }}
+      className={`flex flex-col gap-2 transition-[opacity,transform] duration-150 ${
+        isBeingDragged ? "scale-95 opacity-40" : ""
+      }`}
+    >
       <div className="border-border bg-surface group flex items-center gap-2 rounded-lg border p-3 shadow-[3px_3px_0_0_var(--paper-shadow)] transition-colors duration-200 hover:border-primary/40">
         {dragHandleProps ? (
           <button

@@ -40,6 +40,7 @@ export function SubjectCard({
   isManualSort = false,
   isFirst = false,
   isLast = false,
+  isBeingDragged = false,
   dragHandleProps,
   dragTargetProps,
 }: {
@@ -49,6 +50,7 @@ export function SubjectCard({
   isManualSort?: boolean;
   isFirst?: boolean;
   isLast?: boolean;
+  isBeingDragged?: boolean;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
   dragTargetProps?: React.HTMLAttributes<HTMLLIElement>;
 }) {
@@ -151,8 +153,13 @@ export function SubjectCard({
   return (
     <li
       {...dragTargetProps}
-      style={{ transformOrigin: "center" }}
-      className={`group border-border bg-surface relative flex flex-col gap-3 rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-1 hover:rotate-0 hover:shadow-[6px_6px_0_0_var(--paper-shadow)] ${tiltClass}`}
+      style={{
+        transformOrigin: "center",
+        animation: `fade-up-in 0.4s ease-out ${index * 60}ms backwards`,
+      }}
+      className={`group border-border bg-surface relative flex flex-col gap-3 rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-1 hover:rotate-0 hover:shadow-[6px_6px_0_0_var(--paper-shadow)] ${
+        isBeingDragged ? "scale-95 rotate-2 opacity-40" : tiltClass
+      }`}
     >
       {/* washi tape pinning the card down — colored by exam urgency */}
       <div

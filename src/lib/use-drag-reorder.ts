@@ -57,5 +57,11 @@ export function useDragReorder<T extends { id: string }>(
     };
   }
 
-  return { displayItems, getHandleProps, getTargetProps, isDragging: dragId !== null };
+  return {
+    displayItems,
+    getHandleProps,
+    getTargetProps,
+    isDragging: dragId !== null,
+    isItemDragging: (id: string) => dragId === id,
+  };
 }

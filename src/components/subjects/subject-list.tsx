@@ -24,7 +24,7 @@ export function SubjectList({
   paceById: Record<string, PaceResult | null>;
 }) {
   const [sortMode, setSortMode] = useState<"exam" | "manual">("exam");
-  const { displayItems, getHandleProps, getTargetProps } = useDragReorder(
+  const { displayItems, getHandleProps, getTargetProps, isItemDragging } = useDragReorder(
     subjectsByOrder,
     (orderedIds) => {
       reorderSubjectsAction(orderedIds);
@@ -83,6 +83,7 @@ export function SubjectList({
             isLast={index === items.length - 1}
             dragHandleProps={sortMode === "manual" ? getHandleProps(subject.id) : undefined}
             dragTargetProps={sortMode === "manual" ? getTargetProps(subject.id) : undefined}
+            isBeingDragged={sortMode === "manual" && isItemDragging(subject.id)}
           />
         ))}
       </ul>

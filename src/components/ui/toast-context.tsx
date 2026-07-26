@@ -8,6 +8,7 @@ type Toast = {
   id: number;
   message: string;
   variant: ToastVariant;
+  leaving: boolean;
 };
 
 type ToastContextValue = {
@@ -17,6 +18,7 @@ type ToastContextValue = {
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 const TOAST_DURATION_MS = 4000;
+const TOAST_EXIT_MS = 220;
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -24,9 +26,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const showToast = useCallback((message: string, variant: ToastVariant = "success") => {
     const id = ++nextId.current;
-    setToasts((prev) => [...prev, { id, message, variant }]);
+    setToasts((prev) => [...prev, { id, message, variant, leaving: false }]);
     setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+      // Mark it leaving first so toast-out actually plays, then drop it
+      // from the array once the exit animation has had time to finish —
+      // an immediate filter() would just snap it away.
+      setToasts((prev) => prev.map((toast) => (toast.id === id ? { ...toast, leaving: true } : toast)));
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((toast) => toast.id !== id));
+      }, TOAST_EXIT_MS);
     }, TOAST_DURATION_MS);
   }, []);
 
@@ -47,7 +55,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 ? "border-red-300 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200"
                 : "border-border bg-surface text-foreground"
             }`}
-            style={{ animation: "toast-in 0.25s ease-out" }}
+            style={{
+              animation: toast.leaving
+                ? `toast-out ${TOAST_EXIT_MS}ms ease-in forwards`
+                : "toast-in 0.25s ease-out",
+            }}
           >
             {toast.variant === "error" ? (
               <svg

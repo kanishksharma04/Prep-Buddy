@@ -166,6 +166,7 @@ export default async function DashboardPage() {
   return (
     <main
       id="main-content"
+      style={{ animation: "fade-up-in 0.4s ease-out" }}
       className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-6 py-16"
     >
       <div>

@@ -220,3 +220,33 @@ body::before {
     transform: scale(1) rotate(-3deg);
   }
 }
+
+/* List-item entrance (subject cards, topic rows) and page-content entrance,
+   staggered per index via inline animation-delay. Uses `backwards` fill —
+   not `both` — so the element holds this animation's start state during
+   its delay (no flash-then-hide) but, once finished, falls back to its
+   own CSS (a card's tilt/rotate class) instead of getting stuck at this
+   keyframe's flat end state. */
+@keyframes fade-up-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* A toast dropping back down and fading, the reverse of toast-in — played
+   while a toast is being removed instead of just vanishing on state update. */
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(0.4rem) scale(0.96);
+  }
+}
