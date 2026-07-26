@@ -70,6 +70,7 @@ model Topic {
   parent        Topic?    @relation("TopicSubtopics", fields: [parentId], references: [id], onDelete: Cascade)
   children      Topic[]   @relation("TopicSubtopics")
   title         String
+  note          String?
   isDone        Boolean   @default(false)
   completedAt   DateTime?
   revisionStage Int       @default(0)

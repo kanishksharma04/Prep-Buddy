@@ -8,9 +8,11 @@ import {
   toggleTopicAction,
   addTopicsAction,
   markRevisedAction,
+  resetRevisionAction,
   reorderTopicsAction,
 } from "@/lib/actions/topics";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { RevisionQuizDialog } from "@/components/topics/revision-quiz-dialog";
 import { useToast } from "@/components/ui/toast-context";
 import { isDueForRevision, REVISION_INTERVALS_DAYS } from "@/lib/revision";
 import { useDragReorder } from "@/lib/use-drag-reorder";
@@ -18,6 +20,7 @@ import { useDragReorder } from "@/lib/use-drag-reorder";
 export type Topic = {
   id: string;
   title: string;
+  note: string | null;
   isDone: boolean;
   completedAt: Date | null;
   revisionStage: number;
@@ -98,6 +101,7 @@ export function TopicRow({
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isAddingSubtopic, setIsAddingSubtopic] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(editTopicAction, undefined);
   const [addState, addFormAction, isAddPending] = useActionState(addTopicsAction, undefined);
   const addSubtopicFormRef = useRef<HTMLFormElement>(null);
@@ -156,9 +160,14 @@ export function TopicRow({
     showToast(`"${topic.title}" deleted`);
   }
 
-  async function handleMarkRevised() {
+  async function handleGotIt() {
     await markRevisedAction(topic.id);
     showToast(`"${topic.title}" revised`);
+  }
+
+  async function handleStillFuzzy() {
+    await resetRevisionAction(topic.id);
+    showToast(`"${topic.title}" back to day 1`);
   }
 
   const childrenDone = topic.children.filter((child) => child.isDone).length;
@@ -168,7 +177,7 @@ export function TopicRow({
   if (isEditing) {
     return (
       <li className="border-border bg-surface rounded-lg border p-4 shadow-[4px_4px_0_0_var(--paper-shadow)]">
-        <form action={formAction} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <form action={formAction} className="flex flex-col gap-3">
           <input type="hidden" name="id" value={topic.id} />
           <input
             name="title"
@@ -181,8 +190,27 @@ export function TopicRow({
                 setIsEditing(false);
               }
             }}
-            className="border-control bg-background flex-1 rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           />
+          <div className="space-y-1">
+            <label htmlFor={`note-${topic.id}`} className="text-muted-foreground text-xs font-medium">
+              Note (optional — used to quiz yourself when this is due for revision)
+            </label>
+            <textarea
+              id={`note-${topic.id}`}
+              name="note"
+              defaultValue={topic.note ?? ""}
+              rows={2}
+              maxLength={1000}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  setIsEditing(false);
+                }
+              }}
+              placeholder="e.g. a formula, a mnemonic, or the key answer"
+              className="border-control bg-background w-full rounded-md border px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            />
+          </div>
           <div className="flex gap-2">
             <button
               type="submit"
@@ -316,7 +344,7 @@ export function TopicRow({
           {isDue ? (
             <button
               type="button"
-              onClick={handleMarkRevised}
+              onClick={() => setIsQuizOpen(true)}
               className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-amber-400"
             >
               Revise · Day {REVISION_INTERVALS_DAYS[topic.revisionStage]}
@@ -392,6 +420,15 @@ export function TopicRow({
           }
           confirmLabel="Delete"
           isDangerous
+        />
+
+        <RevisionQuizDialog
+          open={isQuizOpen}
+          onOpenChange={setIsQuizOpen}
+          title={topic.title}
+          note={topic.note}
+          onGotIt={handleGotIt}
+          onStillFuzzy={handleStillFuzzy}
         />
       </div>
 

@@ -1,14 +1,16 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
-import { markRevisedAction } from "@/lib/actions/topics";
+import { markRevisedAction, resetRevisionAction } from "@/lib/actions/topics";
+import { RevisionQuizDialog } from "@/components/topics/revision-quiz-dialog";
 import { REVISION_INTERVALS_DAYS } from "@/lib/revision";
 import { useToast } from "@/components/ui/toast-context";
 
 type DueTopic = {
   id: string;
   title: string;
+  note: string | null;
   subjectId: string;
   subjectName: string;
   revisionStage: number;
@@ -26,13 +28,25 @@ export function DueForRevision({
     (current, revisedId: string) => current.filter((topic) => topic.id !== revisedId),
   );
   const [, startTransition] = useTransition();
+  const [quizTopic, setQuizTopic] = useState<DueTopic | null>(null);
   const { showToast } = useToast();
 
-  function handleMarkRevised(topic: DueTopic) {
+  function handleGotIt(topic: DueTopic) {
     startTransition(async () => {
       setOptimisticDue(topic.id);
       await markRevisedAction(topic.id);
       showToast(`"${topic.title}" revised`);
+    });
+  }
+
+  function handleStillFuzzy(topic: DueTopic) {
+    // Also resolves the "due right now" state (rescheduled a day out from
+    // this moment), so it leaves the list the same way a correct recall
+    // does — just without advancing the schedule.
+    startTransition(async () => {
+      setOptimisticDue(topic.id);
+      await resetRevisionAction(topic.id);
+      showToast(`"${topic.title}" back to day 1`);
     });
   }
 
@@ -73,15 +87,30 @@ export function DueForRevision({
               </div>
               <button
                 type="button"
-                onClick={() => handleMarkRevised(topic)}
+                onClick={() => setQuizTopic(topic)}
                 className="border-control shrink-0 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
-                Revised
+                Revise
               </button>
             </li>
           ))}
         </ul>
       )}
+
+      <RevisionQuizDialog
+        open={quizTopic !== null}
+        onOpenChange={(open) => {
+          if (!open) setQuizTopic(null);
+        }}
+        title={quizTopic?.title ?? ""}
+        note={quizTopic?.note ?? null}
+        onGotIt={() => {
+          if (quizTopic) handleGotIt(quizTopic);
+        }}
+        onStillFuzzy={() => {
+          if (quizTopic) handleStillFuzzy(quizTopic);
+        }}
+      />
     </div>
   );
 }

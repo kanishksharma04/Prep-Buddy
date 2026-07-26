@@ -13,4 +13,10 @@ export const editTopicSchema = z.object({
     .trim()
     .min(1, "Topic title is required")
     .max(200, "Keep it under 200 characters"),
+  note: z
+    .string()
+    .trim()
+    .max(1000, "Keep the note under 1000 characters")
+    .nullish()
+    .transform((value) => (value ? value : null)),
 });

@@ -78,6 +78,7 @@ export async function editTopicAction(
   const parsed = editTopicSchema.safeParse({
     id: formData.get("id"),
     title: formData.get("title"),
+    note: formData.get("note"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -92,7 +93,7 @@ export async function editTopicAction(
 
   await db.topic.update({
     where: { id: topic.id },
-    data: { title: parsed.data.title },
+    data: { title: parsed.data.title, note: parsed.data.note },
   });
 
   revalidatePath(`/subjects/${topic.subjectId}`);
@@ -149,6 +150,25 @@ export async function markRevisedAction(id: string) {
   await db.topic.update({
     where: { id: topic.id },
     data: { revisionStage: topic.revisionStage + 1, lastRevisedAt: new Date() },
+  });
+  revalidatePath(`/subjects/${topic.subjectId}`);
+  revalidatePath("/dashboard");
+}
+
+// "Still fuzzy" on the recall check — genuine spaced-repetition behavior is
+// to restart the schedule on a failed recall, not just nudge it, so this
+// resets to stage 0 rather than merely re-running the same interval.
+export async function resetRevisionAction(id: string) {
+  const user = await requireUser();
+
+  const topic = await db.topic.findFirst({
+    where: { id, subject: { userId: user.id } },
+  });
+  if (!topic || !topic.isDone) return;
+
+  await db.topic.update({
+    where: { id: topic.id },
+    data: { revisionStage: 0, lastRevisedAt: new Date() },
   });
   revalidatePath(`/subjects/${topic.subjectId}`);
   revalidatePath("/dashboard");

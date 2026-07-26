@@ -45,6 +45,7 @@ export default async function DashboardPage() {
       select: {
         id: true,
         title: true,
+        note: true,
         subjectId: true,
         isDone: true,
         completedAt: true,
@@ -60,6 +61,7 @@ export default async function DashboardPage() {
     .map((topic) => ({
       id: topic.id,
       title: topic.title,
+      note: topic.note,
       subjectId: topic.subjectId,
       subjectName: topic.subject.name,
       revisionStage: topic.revisionStage,
