@@ -161,6 +161,25 @@ body::before {
   background-repeat: repeat;
 }
 
+/* The dark theme's own code comments call it "the same desk under a study
+   lamp at night" — this is what actually makes that true instead of just
+   being a color swap. A warm pool of light overhead, fixed to the
+   viewport so it reads as a light source in the room, not something
+   painted on the page. Light mode gets no equivalent: daylight doesn't
+   need a lamp, and the paper grain is already that theme's texture. */
+.dark body::after {
+  content: "";
+  position: fixed;
+  top: -25%;
+  left: 50%;
+  z-index: -1;
+  pointer-events: none;
+  width: min(1200px, 140vw);
+  height: 700px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at top, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
+}
+
 /* Smooth dark/light toggle: every element crossfades its colors instead of
    snapping. Deliberately the universal selector, at the lowest possible
    specificity — any component's own `transition-colors`/`transition-all`
