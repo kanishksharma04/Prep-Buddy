@@ -166,7 +166,7 @@ export default async function DashboardPage() {
   return (
     <main
       id="main-content"
-      className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-16"
+      className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-6 py-16"
     >
       <div>
         <h1 className="font-serif text-3xl font-semibold tracking-tight">Dashboard</h1>
@@ -175,29 +175,39 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {subjects.length > 0 ? (
-        <>
-          <PaceRollup subjects={paceRollupSubjects} />
-          <SummaryStrip
-            totalTopics={totalTopics}
-            doneTopics={doneTopics}
-            nextExam={
-              nextExamSubject
-                ? { subjectName: nextExamSubject.name, examDate: nextExamSubject.examDate! }
-                : null
-            }
-          />
-          <DueForRevision dueTopics={dueTopics} totalEligible={revisableTopics.length} />
-          <StreakHeatmap
-            completedDates={completedTopics.map((topic) => topic.completedAt!)}
-            now={now}
-          />
-        </>
-      ) : null}
+      {/* Subjects — the reason you're here — get the wide main column and
+          come first in reading order. The "Today" insights move to a
+          slimmer rail alongside them on wide screens instead of stacking
+          as full-width cards you'd otherwise have to scroll past. Below
+          the lg breakpoint there's no room for two columns, so the rail
+          drops back above the subject list, closest to its original
+          order. */}
+      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[1fr_320px] lg:items-start">
+        <div className="order-2 flex flex-col gap-8 lg:order-1">
+          <CreateSubjectForm />
+          <ViewToggle listView={listView} calendarView={calendarView} />
+        </div>
 
-      <CreateSubjectForm />
-
-      <ViewToggle listView={listView} calendarView={calendarView} />
+        {subjects.length > 0 ? (
+          <aside className="order-1 flex flex-col gap-6 lg:order-2 lg:sticky lg:top-8">
+            <PaceRollup subjects={paceRollupSubjects} />
+            <SummaryStrip
+              totalTopics={totalTopics}
+              doneTopics={doneTopics}
+              nextExam={
+                nextExamSubject
+                  ? { subjectName: nextExamSubject.name, examDate: nextExamSubject.examDate! }
+                  : null
+              }
+            />
+            <DueForRevision dueTopics={dueTopics} totalEligible={revisableTopics.length} />
+            <StreakHeatmap
+              completedDates={completedTopics.map((topic) => topic.completedAt!)}
+              now={now}
+            />
+          </aside>
+        ) : null}
+      </div>
     </main>
   );
 }
