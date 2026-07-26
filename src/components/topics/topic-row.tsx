@@ -245,25 +245,56 @@ export function TopicRow({
           <span className="w-5.5 shrink-0" aria-hidden="true" />
         )}
 
-        <input
-          type="checkbox"
-          checked={optimisticDone}
-          onChange={(event) => handleToggle(event.target.checked)}
-          aria-label={`Mark "${topic.title}" as ${optimisticDone ? "not done" : "done"}`}
-          className="accent-primary h-4.5 w-4.5 shrink-0 cursor-pointer"
-        />
-        <span
-          className={`flex-1 text-sm transition-colors ${optimisticDone ? "text-muted-foreground line-through" : ""}`}
-        >
+        <label className="relative inline-flex h-4.5 w-4.5 shrink-0 cursor-pointer items-center justify-center">
+          <input
+            type="checkbox"
+            checked={optimisticDone}
+            onChange={(event) => handleToggle(event.target.checked)}
+            aria-label={`Mark "${topic.title}" as ${optimisticDone ? "not done" : "done"}`}
+            className="peer sr-only"
+          />
+          <span
+            aria-hidden="true"
+            className={`h-full w-full rounded-[3px] border-2 transition-colors duration-150 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring ${
+              optimisticDone ? "bg-primary border-primary" : "border-control bg-background"
+            }`}
+          />
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="var(--primary-foreground)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="pointer-events-none absolute h-3 w-3"
+          >
+            <path
+              d="M3 8.5l3 3 7-7"
+              pathLength="1"
+              style={{
+                strokeDasharray: 1,
+                strokeDashoffset: optimisticDone ? 0 : 1,
+                transition: "stroke-dashoffset 0.28s ease-out",
+              }}
+            />
+          </svg>
+        </label>
+        <span className={`flex-1 text-sm transition-colors ${optimisticDone ? "text-muted-foreground" : ""}`}>
           <span
             onDoubleClick={() => setIsEditing(true)}
             title="Double-click to rename"
-            className="cursor-text"
+            className="relative inline-block cursor-text"
           >
             {topic.title}
+            <span
+              aria-hidden="true"
+              className="absolute top-1/2 left-0 h-px w-full origin-left bg-current transition-transform duration-300 ease-out"
+              style={{ transform: `scaleX(${optimisticDone ? 1 : 0})` }}
+            />
           </span>
           {topic.children.length > 0 ? (
-            <span className="text-muted-foreground ml-2 text-xs font-normal tabular-nums no-underline">
+            <span className="text-muted-foreground ml-2 text-xs font-normal tabular-nums">
               {childrenDone}/{topic.children.length}
             </span>
           ) : null}
@@ -271,15 +302,13 @@ export function TopicRow({
             <button
               type="button"
               onClick={handleMarkRevised}
-              className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-800 no-underline transition-colors hover:bg-amber-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-amber-400"
+              className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-amber-400"
             >
               Revise · Day {REVISION_INTERVALS_DAYS[topic.revisionStage]}
             </button>
           ) : null}
           {isMastered ? (
-            <span className="text-muted-foreground ml-2 text-xs font-normal no-underline">
-              ✓ mastered
-            </span>
+            <span className="text-muted-foreground ml-2 text-xs font-normal">✓ mastered</span>
           ) : null}
         </span>
         <div className="flex shrink-0 items-center gap-1 opacity-70 transition-opacity duration-200 group-hover:opacity-100">
