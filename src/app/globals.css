@@ -84,6 +84,26 @@ body {
   }
 }
 
+/* A rubber stamp slamming down: overshoots past its resting angle/size,
+   then settles — not a smooth fade, an impact. */
+@keyframes stamp-pop {
+  0% {
+    opacity: 0;
+    transform: scale(2.4) rotate(4deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.9) rotate(-16deg);
+  }
+  80% {
+    transform: scale(1.05) rotate(-9deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-12deg);
+  }
+}
+
 /* Paper grain: a tiled SVG noise filter, not a color gradient — this is what
    stands in for the old ambient blue/violet glow. Fixed + behind everything,
    pure texture so it reads as paper rather than "AI SaaS blob." */

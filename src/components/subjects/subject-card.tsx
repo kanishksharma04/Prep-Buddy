@@ -60,6 +60,7 @@ export function SubjectCard({
   const urgency = countdown?.urgency ?? "grey";
   const tapeClass = TAPE_CLASSES[urgency];
   const tiltClass = TILT_CLASSES[index % TILT_CLASSES.length];
+  const isComplete = subject.topicsTotal > 0 && subject.topicsDone === subject.topicsTotal;
 
   // showToast reaches into ToastProvider's state — a different component —
   // so it must run in an effect, not during render (unlike setIsEditing,
@@ -158,6 +159,23 @@ export function SubjectCard({
         aria-hidden="true"
         className={`absolute -top-2.5 left-8 h-5 w-16 -rotate-3 ${tapeClass} shadow-sm`}
       />
+
+      {/* rubber stamp, ink-slammed onto the bottom-right corner once every
+          topic is checked off — the celebratory payoff for finishing a
+          subject, styled to match the index-card motif rather than a
+          generic confetti burst. Double border mimics a real stamp's ring. */}
+      {isComplete ? (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 -right-5 z-20 flex h-16 w-16 -translate-y-1/2 items-center justify-center rounded-full border-[3px] border-double border-red-700/75 text-red-700/75 dark:border-red-500/70 dark:text-red-500/70"
+          style={{ animation: "stamp-pop 0.5s ease-out both" }}
+        >
+          <span className="flex flex-col items-center leading-none">
+            <span className="text-[10px] font-black tracking-[0.15em]">DONE</span>
+            <span className="text-xl font-black">✓</span>
+          </span>
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-start gap-2">
