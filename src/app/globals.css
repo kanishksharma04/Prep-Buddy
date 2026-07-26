@@ -160,3 +160,63 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
 }
+
+/* Smooth dark/light toggle: every element crossfades its colors instead of
+   snapping. Deliberately the universal selector, at the lowest possible
+   specificity — any component's own `transition-colors`/`transition-all`
+   class (or a custom animation like stamp-pop/urgent-pulse, a different
+   CSS property entirely) still wins over this without any extra work. */
+* {
+  transition:
+    background-color 200ms ease-out,
+    border-color 200ms ease-out,
+    color 200ms ease-out,
+    box-shadow 200ms ease-out,
+    fill 200ms ease-out,
+    stroke 200ms ease-out;
+}
+
+/* Warm, book-matched text selection instead of the browser's default blue. */
+::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* A scrollbar that looks like it belongs on this desk rather than a
+   generic OS chrome — thin, and colored from the same palette. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 999px;
+  border: 2px solid var(--background);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
+}
+
+/* A startled little wobble for error/not-found icon badges — settles at
+   the same -3deg tilt the badge already rests at statically. */
+@keyframes wobble-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-18deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-3deg);
+  }
+}

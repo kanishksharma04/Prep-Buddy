@@ -13,7 +13,10 @@ export default function GlobalError({
     <html lang="en">
       <body className="flex min-h-full flex-col">
         <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center">
-          <div className="flex h-14 w-14 -rotate-3 items-center justify-center rounded-md bg-red-500/10 text-red-600 dark:text-red-400">
+          <div
+            className="flex h-14 w-14 items-center justify-center rounded-md bg-red-500/10 text-red-600 dark:text-red-400"
+            style={{ animation: "wobble-in 0.5s ease-out both" }}
+          >
             <svg
               viewBox="0 0 24 24"
               fill="none"

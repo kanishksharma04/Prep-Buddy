@@ -6,7 +6,10 @@ export default function NotFound() {
       id="main-content"
       className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center"
     >
-      <div className="bg-primary/10 text-primary flex h-14 w-14 -rotate-3 items-center justify-center rounded-md">
+      <div
+        className="bg-primary/10 text-primary flex h-14 w-14 items-center justify-center rounded-md"
+        style={{ animation: "wobble-in 0.5s ease-out both" }}
+      >
         <svg
           viewBox="0 0 24 24"
           fill="none"

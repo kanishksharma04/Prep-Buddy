@@ -1,4 +1,7 @@
+"use client";
+
 import { formatDate } from "@/lib/format";
+import { useCountUp } from "@/lib/use-count-up";
 
 function SummaryRow({
   icon,
@@ -38,6 +41,9 @@ export function SummaryStrip({
   doneTopics: number;
   nextExam: { subjectName: string; examDate: Date } | null;
 }) {
+  const animatedTotal = useCountUp(totalTopics);
+  const animatedDone = useCountUp(doneTopics);
+
   return (
     <div className="border-border bg-surface flex flex-col gap-4 rounded-lg border p-5 shadow-[3px_3px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_var(--paper-shadow)]">
       <SummaryRow
@@ -56,7 +62,7 @@ export function SummaryStrip({
           </svg>
         }
         label="Total topics"
-        value={totalTopics}
+        value={animatedTotal}
       />
       <SummaryRow
         icon={
@@ -75,7 +81,7 @@ export function SummaryStrip({
           </svg>
         }
         label="Done"
-        value={doneTopics}
+        value={animatedDone}
       />
       <SummaryRow
         icon={
