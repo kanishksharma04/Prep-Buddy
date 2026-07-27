@@ -19,5 +19,3 @@ export const subjectSchema = z.object({
 export const examDateSchema = z.object({
   examDate: examDateField,
 });
-
-export type SubjectInput = z.infer<typeof subjectSchema>;
