@@ -9,6 +9,7 @@ import { ProgressBar } from "@/components/subjects/progress-bar";
 import { PaceBadge } from "@/components/subjects/pace-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast-context";
+import { useUndoableDelete } from "@/lib/use-undoable-delete";
 import { useCountdown } from "@/lib/use-countdown";
 import type { PaceResult } from "@/lib/pace";
 
@@ -56,8 +57,10 @@ export function SubjectCard({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isPendingDelete, setIsPendingDelete] = useState(false);
   const [state, formAction, isPending] = useActionState(renameSubjectAction, undefined);
   const { showToast } = useToast();
+  const deleteWithUndo = useUndoableDelete();
   const countdown = useCountdown(subject.examDate);
   const urgency = countdown?.urgency ?? "grey";
   const tapeClass = TAPE_CLASSES[urgency];
@@ -85,11 +88,17 @@ export function SubjectCard({
     }
   }
 
-  async function handleConfirmDelete() {
-    const formData = new FormData();
-    formData.set("id", subject.id);
-    await deleteSubjectAction(formData);
-    showToast(`"${subject.name}" deleted`);
+  function handleConfirmDelete() {
+    setIsPendingDelete(true);
+    deleteWithUndo({
+      message: `"${subject.name}" deleted`,
+      commit: async () => {
+        const formData = new FormData();
+        formData.set("id", subject.id);
+        await deleteSubjectAction(formData);
+      },
+      undo: () => setIsPendingDelete(false),
+    });
   }
 
   if (isEditing) {
@@ -157,8 +166,13 @@ export function SubjectCard({
         transformOrigin: "center",
         animation: `fade-up-in 0.4s ease-out ${index * 60}ms backwards`,
       }}
+      aria-hidden={isPendingDelete}
       className={`group border-border bg-surface relative flex flex-col gap-3 rounded-lg border p-5 shadow-[4px_4px_0_0_var(--paper-shadow)] transition-all duration-200 hover:-translate-y-1 hover:rotate-0 hover:shadow-[6px_6px_0_0_var(--paper-shadow)] ${
-        isBeingDragged ? "scale-95 rotate-2 opacity-40" : tiltClass
+        isPendingDelete
+          ? "pointer-events-none opacity-30 grayscale"
+          : isBeingDragged
+            ? "scale-95 rotate-2 opacity-40"
+            : tiltClass
       }`}
     >
       {/* washi tape pinning the card down — colored by exam urgency */}

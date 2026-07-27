@@ -4,15 +4,20 @@ import { createContext, useCallback, useContext, useRef, useState } from "react"
 
 type ToastVariant = "success" | "error";
 
+type ToastAction = { label: string; onClick: () => void };
+
 type Toast = {
   id: number;
   message: string;
   variant: ToastVariant;
+  action?: ToastAction;
   leaving: boolean;
 };
 
+type ToastOptions = { action?: ToastAction; durationMs?: number };
+
 type ToastContextValue = {
-  showToast: (message: string, variant?: ToastVariant) => void;
+  showToast: (message: string, variant?: ToastVariant, options?: ToastOptions) => void;
 };
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -24,23 +29,35 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const nextId = useRef(0);
 
-  const showToast = useCallback((message: string, variant: ToastVariant = "success") => {
-    const id = ++nextId.current;
-    setToasts((prev) => [...prev, { id, message, variant, leaving: false }]);
+  const dismissToast = useCallback((id: number) => {
+    // Mark it leaving first so toast-out actually plays, then drop it from
+    // the array once the exit animation has had time to finish — an
+    // immediate filter() would just snap it away.
+    setToasts((prev) => prev.map((toast) => (toast.id === id ? { ...toast, leaving: true } : toast)));
     setTimeout(() => {
-      // Mark it leaving first so toast-out actually plays, then drop it
-      // from the array once the exit animation has had time to finish —
-      // an immediate filter() would just snap it away.
-      setToasts((prev) => prev.map((toast) => (toast.id === id ? { ...toast, leaving: true } : toast)));
-      setTimeout(() => {
-        setToasts((prev) => prev.filter((toast) => toast.id !== id));
-      }, TOAST_EXIT_MS);
-    }, TOAST_DURATION_MS);
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, TOAST_EXIT_MS);
   }, []);
+
+  const showToast = useCallback(
+    (message: string, variant: ToastVariant = "success", options?: ToastOptions) => {
+      const id = ++nextId.current;
+      setToasts((prev) => [...prev, { id, message, variant, action: options?.action, leaving: false }]);
+      setTimeout(() => dismissToast(id), options?.durationMs ?? TOAST_DURATION_MS);
+    },
+    [dismissToast],
+  );
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
+      {/* Note: a toast's action button (e.g. "Undo") is only clickable
+          while no native <dialog> is open via showModal() — a modal
+          dialog makes every other top-level node inert per the HTML spec,
+          which blocks pointer events here regardless of z-index. Callers
+          that fire a toast from inside an open dialog (see
+          DayDetailDialog) render their own inline undo affordance instead
+          of relying on this button. */}
       <div
         aria-live="polite"
         aria-atomic="true"
@@ -92,7 +109,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 />
               </svg>
             )}
-            {toast.message}
+            <span>{toast.message}</span>
+            {toast.action ? (
+              <button
+                type="button"
+                onClick={() => {
+                  toast.action!.onClick();
+                  dismissToast(toast.id);
+                }}
+                className="text-primary decoration-2 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                {toast.action.label}
+              </button>
+            ) : null}
           </div>
         ))}
       </div>

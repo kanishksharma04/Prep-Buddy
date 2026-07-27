@@ -14,6 +14,7 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { RevisionQuizDialog } from "@/components/topics/revision-quiz-dialog";
 import { useToast } from "@/components/ui/toast-context";
+import { useUndoableDelete } from "@/lib/use-undoable-delete";
 import { isDueForRevision, REVISION_INTERVALS_DAYS } from "@/lib/revision";
 import { useDragReorder } from "@/lib/use-drag-reorder";
 
@@ -99,6 +100,7 @@ export function TopicRow({
   const [, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isPendingDelete, setIsPendingDelete] = useState(false);
   const [isAddingSubtopic, setIsAddingSubtopic] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
@@ -107,6 +109,7 @@ export function TopicRow({
   const addSubtopicFormRef = useRef<HTMLFormElement>(null);
   const addSubtopicTextareaRef = useRef<HTMLTextAreaElement>(null);
   const { showToast } = useToast();
+  const deleteWithUndo = useUndoableDelete();
 
   // showToast reaches into ToastProvider's state, so it needs an effect
   // (see subject-card.tsx).
@@ -153,11 +156,17 @@ export function TopicRow({
     });
   }
 
-  async function handleConfirmDelete() {
-    const formData = new FormData();
-    formData.set("id", topic.id);
-    await deleteTopicAction(formData);
-    showToast(`"${topic.title}" deleted`);
+  function handleConfirmDelete() {
+    setIsPendingDelete(true);
+    deleteWithUndo({
+      message: `"${topic.title}" deleted`,
+      commit: async () => {
+        const formData = new FormData();
+        formData.set("id", topic.id);
+        await deleteTopicAction(formData);
+      },
+      undo: () => setIsPendingDelete(false),
+    });
   }
 
   async function handleGotIt() {
@@ -240,9 +249,10 @@ export function TopicRow({
   return (
     <li
       {...dragTargetProps}
+      aria-hidden={isPendingDelete}
       style={{ animation: `fade-up-in 0.35s ease-out ${index * 40}ms backwards` }}
       className={`flex flex-col gap-2 transition-[opacity,transform] duration-150 ${
-        isBeingDragged ? "scale-95 opacity-40" : ""
+        isPendingDelete ? "pointer-events-none opacity-30 grayscale" : isBeingDragged ? "scale-95 opacity-40" : ""
       }`}
     >
       <div className="border-border bg-surface group flex items-center gap-2 rounded-lg border p-3 shadow-[3px_3px_0_0_var(--paper-shadow)] transition-colors duration-200 hover:border-primary/40">

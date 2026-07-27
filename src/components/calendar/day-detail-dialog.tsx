@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClassEventAction, deleteClassEventAction } from "@/lib/actions/class-events";
 import { useToast } from "@/components/ui/toast-context";
+import { useUndoableDelete } from "@/lib/use-undoable-delete";
 import { utcDateKey, utcDateToLocalCalendarDate } from "@/lib/calendar";
 
 type ExamMarker = { subjectId: string; subjectName: string };
@@ -45,6 +46,13 @@ export function DayDetailDialog({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const { showToast } = useToast();
+  const deleteWithUndo = useUndoableDelete();
+  // Presence of an id here means "pending delete"; the value is the undo
+  // callback, rendered as an inline affordance in place of the row (see
+  // the comment on useUndoableDelete — a toast's own Undo button isn't
+  // clickable while this dialog is open, since showModal() makes
+  // everything outside the dialog inert).
+  const [pendingUndos, setPendingUndos] = useState<Record<string, () => void>>({});
   const [state, formAction, isPending] = useActionState(createClassEventAction, undefined);
 
   useEffect(() => {
@@ -61,11 +69,24 @@ export function DayDetailDialog({
     }
   }, [state, showToast]);
 
-  async function handleDelete(id: string, title: string) {
-    const formData = new FormData();
-    formData.set("id", id);
-    await deleteClassEventAction(formData);
-    showToast(`"${title}" removed`);
+  function handleDelete(event: ClassMarker) {
+    const undoNow = deleteWithUndo({
+      message: `"${event.title}" removed`,
+      showUndoInToast: false,
+      commit: async () => {
+        const formData = new FormData();
+        formData.set("id", event.id);
+        await deleteClassEventAction(formData);
+      },
+      undo: () => {
+        setPendingUndos((prev) => {
+          const next = { ...prev };
+          delete next[event.id];
+          return next;
+        });
+      },
+    });
+    setPendingUndos((prev) => ({ ...prev, [event.id]: undoNow }));
   }
 
   return (
@@ -144,42 +165,64 @@ export function DayDetailDialog({
             <p className="text-muted-foreground text-sm">No classes added for this day yet.</p>
           ) : (
             <ul className="space-y-1.5">
-              {classEvents.map((event) => (
-                <li
-                  key={event.id}
-                  className="border-border bg-background flex items-center justify-between gap-2 rounded-md border p-3"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{event.title}</p>
-                    {event.subjectName ? (
-                      <p className="text-muted-foreground text-xs">{event.subjectName}</p>
-                    ) : null}
-                    {formatRange(event.startDate, event.endDate) ? (
-                      <p className="text-muted-foreground text-xs">
-                        {formatRange(event.startDate, event.endDate)}
-                      </p>
-                    ) : null}
-                    {event.link ? (
-                      <a
-                        href={event.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary inline-block text-xs font-medium hover:underline"
+              {classEvents.map((event) => {
+                const undoNow = pendingUndos[event.id];
+                if (undoNow) {
+                  return (
+                    <li
+                      key={event.id}
+                      className="border-border bg-background flex items-center justify-between gap-2 rounded-md border border-dashed p-3 text-sm"
+                    >
+                      <span className="text-muted-foreground truncate">
+                        &ldquo;{event.title}&rdquo; removed
+                      </span>
+                      <button
+                        type="button"
+                        onClick={undoNow}
+                        className="text-primary shrink-0 text-xs font-medium decoration-2 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                       >
-                        Join class →
-                      </a>
-                    ) : null}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(event.id, event.title)}
-                    aria-label={`Remove "${event.title}"`}
-                    className="shrink-0 rounded-md px-2 py-1 text-xs text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
+                        Undo
+                      </button>
+                    </li>
+                  );
+                }
+                return (
+                  <li
+                    key={event.id}
+                    className="border-border bg-background flex items-center justify-between gap-2 rounded-md border p-3"
                   >
-                    Remove
-                  </button>
-                </li>
-              ))}
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{event.title}</p>
+                      {event.subjectName ? (
+                        <p className="text-muted-foreground text-xs">{event.subjectName}</p>
+                      ) : null}
+                      {formatRange(event.startDate, event.endDate) ? (
+                        <p className="text-muted-foreground text-xs">
+                          {formatRange(event.startDate, event.endDate)}
+                        </p>
+                      ) : null}
+                      {event.link ? (
+                        <a
+                          href={event.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary inline-block text-xs font-medium hover:underline"
+                        >
+                          Join class →
+                        </a>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(event)}
+                      aria-label={`Remove "${event.title}"`}
+                      className="shrink-0 rounded-md px-2 py-1 text-xs text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

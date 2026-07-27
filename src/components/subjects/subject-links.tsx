@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { createSubjectLinkAction, deleteSubjectLinkAction } from "@/lib/actions/subject-links";
 import { useToast } from "@/components/ui/toast-context";
+import { useUndoableDelete } from "@/lib/use-undoable-delete";
 
 type SubjectLinkItem = { id: string; title: string; url: string };
 
@@ -16,6 +17,8 @@ export function SubjectLinks({
   const [state, formAction, isPending] = useActionState(createSubjectLinkAction, undefined);
   const formRef = useRef<HTMLFormElement>(null);
   const { showToast } = useToast();
+  const deleteWithUndo = useUndoableDelete();
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (state?.ok) {
@@ -24,11 +27,23 @@ export function SubjectLinks({
     }
   }, [state, showToast]);
 
-  async function handleDelete(id: string, title: string) {
-    const formData = new FormData();
-    formData.set("id", id);
-    await deleteSubjectLinkAction(formData);
-    showToast(`"${title}" removed`);
+  function handleDelete(link: SubjectLinkItem) {
+    setPendingDeleteIds((prev) => new Set(prev).add(link.id));
+    deleteWithUndo({
+      message: `"${link.title}" removed`,
+      commit: async () => {
+        const formData = new FormData();
+        formData.set("id", link.id);
+        await deleteSubjectLinkAction(formData);
+      },
+      undo: () => {
+        setPendingDeleteIds((prev) => {
+          const next = new Set(prev);
+          next.delete(link.id);
+          return next;
+        });
+      },
+    });
   }
 
   return (
@@ -43,29 +58,37 @@ export function SubjectLinks({
         <p className="text-muted-foreground mt-3 text-sm">No links added yet.</p>
       ) : (
         <ul className="mt-3 flex flex-col gap-1.5">
-          {links.map((link) => (
-            <li
-              key={link.id}
-              className="border-border bg-background flex items-center justify-between gap-2 rounded-md border p-2.5 transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[2px_2px_0_0_var(--paper-shadow)]"
-            >
-              <a
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary min-w-0 truncate text-sm font-medium hover:underline"
+          {links.map((link) => {
+            const isPendingDelete = pendingDeleteIds.has(link.id);
+            return (
+              <li
+                key={link.id}
+                aria-hidden={isPendingDelete}
+                className={`border-border bg-background flex items-center justify-between gap-2 rounded-md border p-2.5 transition-all duration-150 ${
+                  isPendingDelete
+                    ? "pointer-events-none opacity-30 grayscale"
+                    : "hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[2px_2px_0_0_var(--paper-shadow)]"
+                }`}
               >
-                {link.title}
-              </a>
-              <button
-                type="button"
-                onClick={() => handleDelete(link.id, link.title)}
-                aria-label={`Remove "${link.title}"`}
-                className="shrink-0 rounded-lg px-2 py-1 text-xs text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
-              >
-                Remove
-              </button>
-            </li>
-          ))}
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary min-w-0 truncate text-sm font-medium hover:underline"
+                >
+                  {link.title}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(link)}
+                  aria-label={`Remove "${link.title}"`}
+                  className="shrink-0 rounded-lg px-2 py-1 text-xs text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-red-400 dark:hover:bg-red-950"
+                >
+                  Remove
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
 
