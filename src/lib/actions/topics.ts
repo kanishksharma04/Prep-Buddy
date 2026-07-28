@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth-guard";
 import { db } from "@/lib/db";
 import { addTopicsSchema, editTopicSchema } from "@/lib/validation/topic";
 import { REVISION_INTERVALS_DAYS } from "@/lib/revision";
+import { generateRecallQuestion } from "@/lib/ai/recall-question";
 
 export type TopicFormState = { error?: string; ok?: boolean } | undefined;
 
@@ -93,7 +94,13 @@ export async function editTopicAction(
 
   await db.topic.update({
     where: { id: topic.id },
-    data: { title: parsed.data.title, note: parsed.data.note },
+    data: {
+      title: parsed.data.title,
+      note: parsed.data.note,
+      // A changed note invalidates any cached recall question — it would
+      // otherwise quiz on stale content the next time this topic is due.
+      ...(parsed.data.note !== topic.note ? { quizQuestion: null, quizAnswer: null } : {}),
+    },
   });
 
   revalidatePath(`/subjects/${topic.subjectId}`);
@@ -153,6 +160,38 @@ export async function markRevisedAction(id: string) {
   });
   revalidatePath(`/subjects/${topic.subjectId}`);
   revalidatePath("/dashboard");
+}
+
+// Generates (and caches) an AI recall question + answer from a topic's note,
+// for the revision flip card. Returns the cached pair if one already exists,
+// so this is safe to call every time the quiz dialog opens. Returns null
+// when there's nothing to quiz on (no note) or generation isn't available
+// (no ANTHROPIC_API_KEY configured, or the model call failed) — callers
+// fall back to showing the raw note in that case.
+export async function generateRecallQuestionAction(
+  topicId: string,
+): Promise<{ question: string; answer: string } | null> {
+  const user = await requireUser();
+
+  const topic = await db.topic.findFirst({
+    where: { id: topicId, subject: { userId: user.id } },
+  });
+  if (!topic) return null;
+
+  if (topic.quizQuestion && topic.quizAnswer) {
+    return { question: topic.quizQuestion, answer: topic.quizAnswer };
+  }
+  if (!topic.note) return null;
+
+  const generated = await generateRecallQuestion(topic.title, topic.note);
+  if (!generated) return null;
+
+  await db.topic.update({
+    where: { id: topic.id },
+    data: { quizQuestion: generated.question, quizAnswer: generated.answer },
+  });
+
+  return generated;
 }
 
 // "Still fuzzy" on the recall check — genuine spaced-repetition behavior is

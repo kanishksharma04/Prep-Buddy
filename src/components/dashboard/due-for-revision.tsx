@@ -11,6 +11,8 @@ type DueTopic = {
   id: string;
   title: string;
   note: string | null;
+  quizQuestion: string | null;
+  quizAnswer: string | null;
   subjectId: string;
   subjectName: string;
   revisionStage: number;
@@ -102,8 +104,11 @@ export function DueForRevision({
         onOpenChange={(open) => {
           if (!open) setQuizTopic(null);
         }}
+        topicId={quizTopic?.id ?? ""}
         title={quizTopic?.title ?? ""}
         note={quizTopic?.note ?? null}
+        initialQuestion={quizTopic?.quizQuestion ?? null}
+        initialAnswer={quizTopic?.quizAnswer ?? null}
         onGotIt={() => {
           if (quizTopic) handleGotIt(quizTopic);
         }}

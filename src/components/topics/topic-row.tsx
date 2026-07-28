@@ -22,6 +22,8 @@ export type Topic = {
   id: string;
   title: string;
   note: string | null;
+  quizQuestion: string | null;
+  quizAnswer: string | null;
   isDone: boolean;
   completedAt: Date | null;
   revisionStage: number;
@@ -435,8 +437,11 @@ export function TopicRow({
         <RevisionQuizDialog
           open={isQuizOpen}
           onOpenChange={setIsQuizOpen}
+          topicId={topic.id}
           title={topic.title}
           note={topic.note}
+          initialQuestion={topic.quizQuestion}
+          initialAnswer={topic.quizAnswer}
           onGotIt={handleGotIt}
           onStillFuzzy={handleStillFuzzy}
         />

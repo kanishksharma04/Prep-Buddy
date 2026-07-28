@@ -7,6 +7,9 @@ const envSchema = z.object({
     .string()
     .min(1, "DATABASE_URL_UNPOOLED is required (direct Neon connection string, for migrations)"),
   AUTH_SECRET: z.string().min(1, "AUTH_SECRET is required (generate with: npx auth secret)"),
+  // Optional — powers the AI-generated recall questions on the revision flip
+  // card. Without it, the flip card falls back to the topic's raw note.
+  ANTHROPIC_API_KEY: z.string().optional(),
 });
 
 // Coerce missing vars to "" first — otherwise Zod's base type check fails on

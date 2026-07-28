@@ -71,6 +71,8 @@ model Topic {
   children      Topic[]   @relation("TopicSubtopics")
   title         String
   note          String?
+  quizQuestion  String?
+  quizAnswer    String?
   isDone        Boolean   @default(false)
   completedAt   DateTime?
   revisionStage Int       @default(0)

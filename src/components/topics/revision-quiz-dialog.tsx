@@ -1,29 +1,57 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { generateRecallQuestionAction } from "@/lib/actions/topics";
 
 // A real recall check instead of a rubber-stamp "Revised" button: the
-// front shows just the topic title, you try to remember it, then flip to
-// see the note and grade yourself. "Still fuzzy" restarts the spaced-
-// repetition schedule (see resetRevisionAction) rather than nudging it —
-// a failed recall should reset, not just delay.
+// front shows a question, you try to remember it, then flip to see the
+// answer and grade yourself. "Still fuzzy" restarts the spaced-repetition
+// schedule (see resetRevisionAction) rather than nudging it — a failed
+// recall should reset, not just delay.
+//
+// When the topic has a note, the front/back pair is an AI-generated recall
+// question and answer (cached on the Topic row by generateRecallQuestionAction)
+// instead of the raw title/note — a sharper test than "did you remember the
+// note verbatim." Falls back to title/note whenever generation isn't
+// available (no note, no ANTHROPIC_API_KEY configured, or the call failed).
 export function RevisionQuizDialog({
   open,
   onOpenChange,
+  topicId,
   title,
   note,
+  initialQuestion,
+  initialAnswer,
   onGotIt,
   onStillFuzzy,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  topicId: string;
   title: string;
   note: string | null;
+  initialQuestion: string | null;
+  initialAnswer: string | null;
   onGotIt: () => void;
   onStillFuzzy: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [quiz, setQuiz] = useState<{ question: string; answer: string } | null>(
+    initialQuestion && initialAnswer ? { question: initialQuestion, answer: initialAnswer } : null,
+  );
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Re-sync from the server-cached pair whenever it changes — e.g. cleared
+  // back to null after the note was edited (see editTopicAction). Derived
+  // during render (same pattern as topic-row.tsx's `handledState`) rather
+  // than an effect, since this is deriving state from props, not
+  // subscribing to an external system.
+  const [handledProps, setHandledProps] = useState({ initialQuestion, initialAnswer });
+  if (handledProps.initialQuestion !== initialQuestion || handledProps.initialAnswer !== initialAnswer) {
+    setHandledProps({ initialQuestion, initialAnswer });
+    setQuiz(initialQuestion && initialAnswer ? { question: initialQuestion, answer: initialAnswer } : null);
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -35,6 +63,29 @@ export function RevisionQuizDialog({
       dialog.close();
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!open || quiz || !note) return;
+    let cancelled = false;
+    // Kicking off a request to an external system (the AI generation
+    // action) when the dialog opens, not deriving state from props/state —
+    // the documented exception to "set-state-in-effect" (see use-countdown.ts).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsGenerating(true);
+    generateRecallQuestionAction(topicId)
+      .then((result) => {
+        if (!cancelled && result) setQuiz(result);
+      })
+      .finally(() => {
+        if (!cancelled) setIsGenerating(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, quiz, note, topicId]);
+
+  const front = quiz?.question ?? title;
+  const back = quiz?.answer ?? (note || "No note added for this topic — edit it to add one next time.");
 
   function handleGotIt() {
     onGotIt();
@@ -89,8 +140,10 @@ export function RevisionQuizDialog({
               <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Recall
               </span>
-              <p className="font-serif text-lg font-semibold">{title}</p>
-              <span className="text-muted-foreground mt-2 text-xs">Tap to flip</span>
+              <p className="font-serif text-lg font-semibold">{front}</p>
+              <span className="text-muted-foreground mt-2 text-xs">
+                {isGenerating && !quiz ? "Preparing a sharper question…" : "Tap to flip"}
+              </span>
             </div>
 
             {/* back: the note/answer */}
@@ -101,9 +154,7 @@ export function RevisionQuizDialog({
               <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Answer
               </span>
-              <p className="text-sm whitespace-pre-wrap">
-                {note || "No note added for this topic — edit it to add one next time."}
-              </p>
+              <p className="text-sm whitespace-pre-wrap">{back}</p>
             </div>
           </div>
         </button>
